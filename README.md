@@ -4,8 +4,6 @@
 
 *Easily visualize complex OpenAPI / Swagger API structure*
 
----
-
 Have you ever had to compare two massive OpenAPI files, each with 5,000 lines, and then write a report about it? I have - and that's why I created this tool.
 
 ![Writing API break report](./public/report-api-break.png)
@@ -50,7 +48,7 @@ When you choose a path or a reference object (component) to view, here's how the
 ![Data flow](./public/data-flow.png)
 
 - First, the selected item change (`store/selectedItem.ts`)
-- The subscribe function in `store/reactFlow.ts` add its corresponding tree to the canvas
+- The subscribe function in `store/reactFlow.ts` listen to selected item changed will add its corresponding tree to the canvas
 - The `components/node-layout` using [Dagre.js](https://github.com/dagrejs/dagre/wiki) will calculate layout and update back into the reactFlow store
 
 See all my diagrams in the `/docs` folder.
