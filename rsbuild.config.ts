@@ -1,5 +1,7 @@
 import { defineConfig } from '@rsbuild/core';
 import { pluginReact } from '@rsbuild/plugin-react';
+// https://mmazzarolo.com/blog/2024-08-13-async-chunk-preloading-on-load/
+import { pluginChunksPreload } from './src/plugin/router-chunk-mapping';
 
 export default defineConfig({
   html: {
@@ -11,11 +13,12 @@ export default defineConfig({
     },
     favicon: './public/favicon.ico',
   },
-  plugins: [pluginReact()],
-  performance: {
-    preload: {
-      type: 'async-chunks',
-      include: [/\.png$/],
-    },
-  },
+  plugins: [pluginReact(), pluginChunksPreload()],
+  // This is only affect in dev mode :(
+  // performance: {
+  //   preload: {
+  //     type: 'async-chunks',
+  //     include: [/\.png$/],
+  //   },
+  // },
 });
