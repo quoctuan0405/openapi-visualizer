@@ -4,7 +4,9 @@
 
 *Easily visualize complex OpenAPI / Swagger API structure*
 
-Have you ever had to compare two massive OpenAPI files, each with 5,000 lines, and then write a report about it? I have - and that's why I created this tool.
+Have you ever had to compare two massive OpenAPI files, each with 5,000 lines, and then write a report about it? I have - and that's why I created this tool. 
+
+You can check it out here ![https://openapi-visualizer.vercel.app/](https://openapi-visualizer.vercel.app/);
 
 ![Writing API break report](./public/report-api-break.png)
 
