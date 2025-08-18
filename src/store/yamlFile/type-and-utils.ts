@@ -152,8 +152,6 @@ export const buildTreeOfFile = async (fileObject: OpenAPIFileSchema) => {
         pathNode.parameters = getParameters(apiDefinition.parameters);
 
         // Body
-        const requestBodySchema =
-          apiDefinition.requestBody?.content?.['application/json']?.schema;
         const request: RequestBody = {
           name: 'Request',
           parents: new Set([pathNode]),
@@ -162,9 +160,22 @@ export const buildTreeOfFile = async (fileObject: OpenAPIFileSchema) => {
           flattenRefs: new Set(),
         };
 
-        const requestBodyProperty = getProperty('schema', requestBodySchema);
-        if (requestBodyProperty) {
-          request.schema = requestBodyProperty;
+        const requestBodySchema =
+          apiDefinition.requestBody?.content?.['application/json']?.schema;
+        if (requestBodySchema) {
+          // Parse the properties in schema
+          const requestBodyProperty = getProperty('schema', requestBodySchema);
+          if (requestBodyProperty) {
+            request.schema = requestBodyProperty;
+          }
+        } else {
+          // Else get the first ref object (this is for weird case)
+          const requestRefObjects = findAllRefPaths(apiDefinition.requestBody);
+          if (requestRefObjects) {
+            request.schema = {
+              type: requestRefObjects[0],
+            };
+          }
         }
 
         const bodyRefPaths = findAllRefPaths(apiDefinition.requestBody);
@@ -191,8 +202,6 @@ export const buildTreeOfFile = async (fileObject: OpenAPIFileSchema) => {
           for (const [status, responseObj] of Object.entries(
             apiDefinition.responses,
           )) {
-            const responseSchema =
-              responseObj.content?.['application/json']?.schema;
             const response: Response = {
               status,
               name: 'Response',
@@ -202,9 +211,25 @@ export const buildTreeOfFile = async (fileObject: OpenAPIFileSchema) => {
               flattenRefs: new Set(),
             };
 
-            const responseProperty = getProperty('schema', responseSchema);
-            if (responseProperty) {
-              response.schema = responseProperty;
+            const responseSchema =
+              responseObj.content?.['application/json']?.schema;
+
+            if (responseSchema) {
+              // Parse the properties in schema
+              const responseProperty = getProperty('schema', responseSchema);
+              if (responseProperty) {
+                response.schema = responseProperty;
+              }
+            } else {
+              // Else get the first ref object (this is for weird case)
+              const requestRefObjects = findAllRefPaths(
+                apiDefinition.requestBody,
+              );
+              if (requestRefObjects) {
+                request.schema = {
+                  type: requestRefObjects[0],
+                };
+              }
             }
 
             const responseRefPaths = findAllRefPaths(responseObj);

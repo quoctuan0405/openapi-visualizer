@@ -47,72 +47,70 @@ const App = () => {
 
   return (
     // <AuroraBackground>
-    <div className="flex flex-row flex-wrap items-center justify-center">
+    <ResizablePanelGroup className="max-h-screen" direction="horizontal">
       <ActivityBarLeft />
 
-      <div className="flex-1 h-screen">
-        <ResizablePanelGroup direction="horizontal">
-          {/* Sidebar left */}
-          {leftSidebarSnap.isShow && (
-            <>
-              <ResizablePanel id="sidebar-left" defaultSize={20} order={1}>
-                <SidebarLeft />
-              </ResizablePanel>
-              <ResizableHandle className="w-1.5 dark:bg-neutral-900" />
-            </>
-          )}
-
-          {/* Sidebar code left */}
-          {leftSidebarSnap.mode === 'code-viewer' && (
-            <>
-              <ResizablePanel
-                id="sidebar-code-left"
-                defaultSize={30}
-                order={2}
-                className="!overflow-x-scroll !overflow-y-scroll dark:bg-neutral-900 dark:scrollbar dark:scrollbar-thumb-neutral-800 dark:scrollbar-track-neutral-900"
-              >
-                <CodePanelLeft />
-              </ResizablePanel>
-              <ResizableHandle className="w-1.5 dark:bg-neutral-900" />
-            </>
-          )}
-
-          {/* ReactFlow canvas */}
-          <ResizablePanel id="reactflow-canvas" order={3}>
-            <ReactFlowProvider>
-              <ReactFlowCanvas />
-            </ReactFlowProvider>
+      {/* Sidebar left */}
+      {leftSidebarSnap.isShow && (
+        <>
+          <ResizablePanel id="sidebar-left" defaultSize={20} order={1}>
+            <SidebarLeft />
           </ResizablePanel>
-          <ResizableHandle className="w-1.5" />
+          <ResizableHandle className="w-1.5 dark:bg-neutral-900" />
+        </>
+      )}
 
-          {/* Sidebar code right */}
-          {rightSidebarSnap.mode === 'code-viewer' && (
-            <>
-              <ResizablePanel
-                id="sidebar-code-right"
-                defaultSize={30}
-                order={4}
-                className="!overflow-x-scroll !overflow-y-scroll dark:scrollbar dark:scrollbar-thumb-neutral-800 dark:scrollbar-track-neutral-900"
-              >
-                <CodePanelRight />
-              </ResizablePanel>
-              {rightSidebarSnap.isShow && (
-                <ResizableHandle className="w-1.5 dark:bg-neutral-900" />
-              )}
-            </>
-          )}
+      {/* Sidebar code left */}
+      {leftSidebarSnap.mode === 'code-viewer' && (
+        <>
+          <ResizablePanel
+            id="sidebar-code-left"
+            defaultSize={30}
+            order={2}
+            className="!overflow-x-scroll !overflow-y-scroll dark:bg-neutral-900 dark:scrollbar dark:scrollbar-thumb-neutral-800 dark:scrollbar-track-neutral-900"
+          >
+            <CodePanelLeft />
+          </ResizablePanel>
+          <ResizableHandle className="w-1.5 dark:bg-neutral-900" />
+        </>
+      )}
 
-          {/* Sidebar right */}
+      {/* ReactFlow canvas */}
+      <ResizablePanel id="reactflow-canvas" order={3}>
+        <ReactFlowProvider>
+          <ReactFlowCanvas />
+        </ReactFlowProvider>
+      </ResizablePanel>
+      {(rightSidebarSnap.mode === 'code-viewer' || rightSidebarSnap.isShow) && (
+        <ResizableHandle className="w-1.5" />
+      )}
+
+      {/* Sidebar code right */}
+      {rightSidebarSnap.mode === 'code-viewer' && (
+        <>
+          <ResizablePanel
+            id="sidebar-code-right"
+            defaultSize={30}
+            order={4}
+            className="!overflow-x-scroll !overflow-y-scroll dark:scrollbar dark:scrollbar-thumb-neutral-800 dark:scrollbar-track-neutral-900"
+          >
+            <CodePanelRight />
+          </ResizablePanel>
           {rightSidebarSnap.isShow && (
-            <ResizablePanel id="sidebar-right" defaultSize={20} order={5}>
-              <SidebarRight />
-            </ResizablePanel>
+            <ResizableHandle className="w-1.5 dark:bg-neutral-900" />
           )}
-        </ResizablePanelGroup>
-      </div>
+        </>
+      )}
+
+      {/* Sidebar right */}
+      {rightSidebarSnap.isShow && (
+        <ResizablePanel id="sidebar-right" defaultSize={20} order={5}>
+          <SidebarRight />
+        </ResizablePanel>
+      )}
 
       <ActivityBarRight />
-    </div>
+    </ResizablePanelGroup>
     // </AuroraBackground>
   );
 };
