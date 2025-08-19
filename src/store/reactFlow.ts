@@ -6,12 +6,18 @@ import {
   type ComponentViewerNode,
 } from '../components/react-flow-node/component-viewer';
 import { PathViewer } from '../components/react-flow-node/path-viewer';
+import type { Toast } from '../components/toast';
 import { yieldToMainThread } from '../lib/yieldToMainThread';
 import type { Side } from './focusSide';
 import { store as selectedItemStore } from './selectedItem';
 import type { ComponentNode, PathNode } from './yamlFile/type-and-utils';
 import { store as yamlFileLeftStore } from './yamlFile/yamlFileLeft';
 import { store as yamlFileRightStore } from './yamlFile/yamlFileRight';
+
+let toast: Toast | undefined;
+import('../components/toast').then((result) => {
+  toast = result.default;
+});
 
 export const dragHandleClass = 'drag-handle__custom';
 
@@ -175,12 +181,32 @@ subscribe(selectedItemStore, () => {
 subscribeKey(store, 'isAddedButNotPositionCorrectlyLeft', () => {
   if (!store.isAddedButNotPositionCorrectlyLeft) {
     store.isRenderPositionSuccessfully = true;
+
+    if (selectedItemStore.value.selectedPathLeft) {
+      toast?.success(
+        `Render ${selectedItemStore.value.selectedPathLeft} complete`,
+      );
+    } else if (selectedItemStore.value.selectedComponentNameLeft) {
+      toast?.success(
+        `Render ${selectedItemStore.value.selectedComponentNameLeft} complete`,
+      );
+    }
   }
 });
 
 subscribeKey(store, 'isAddedButNotPositionCorrectlyRight', () => {
   if (!store.isAddedButNotPositionCorrectlyRight) {
     store.isRenderPositionSuccessfully = true;
+
+    if (selectedItemStore.value.selectedPathRight) {
+      toast?.success(
+        `Render ${selectedItemStore.value.selectedPathRight} complete`,
+      );
+    } else if (selectedItemStore.value.selectedComponentNameRight) {
+      toast?.success(
+        `Render ${selectedItemStore.value.selectedComponentNameRight} complete`,
+      );
+    }
   }
 });
 

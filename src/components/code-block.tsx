@@ -13,6 +13,7 @@ import {
   CollapsibleTrigger,
 } from './collapsible';
 import { IconButton } from './icon-button';
+import toast from './toast';
 
 // Create custom highlighter with dynamic imports to optimize client-side bundle size
 const highlighter = await createHighlighterCore({
@@ -36,31 +37,34 @@ export const CodeBlock: React.FC<Props> = memo(({ title, code }) => {
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger className="flex flex-row flex-wrap items-center gap-2 w-full pl-5 group cursor-pointer">
-        <FaCaretDown
-          className={cn(
-            'text-neutral-500 group-hover:text-neutral-600 dark:text-neutral-400 group-hover:dark:text-neutral-300 duration-200',
-            {
-              'rotate-0': isOpen,
-              '-rotate-90': !isOpen,
-            },
-          )}
-        />
+      <CollapsibleTrigger asChild>
+        <div className="flex flex-row flex-wrap items-center gap-2 w-full pl-5 group cursor-pointer">
+          <FaCaretDown
+            className={cn(
+              'text-neutral-500 group-hover:text-neutral-600 dark:text-neutral-400 group-hover:dark:text-neutral-300 duration-200',
+              {
+                'rotate-0': isOpen,
+                '-rotate-90': !isOpen,
+              },
+            )}
+          />
 
-        <p className="py-2 font-semibold text-neutral-600 group-hover:text-neutral-700 dark:text-neutral-400 group-hover:dark:text-neutral-300 duration-200">
-          {title}
-        </p>
+          <p className="py-2 font-semibold text-neutral-600 group-hover:text-neutral-700 dark:text-neutral-400 group-hover:dark:text-neutral-300 duration-200">
+            {title}
+          </p>
 
-        <IconButton
-          className="rounded-lg"
-          tooltip="Copy code"
-          onClick={(e) => {
-            e.stopPropagation();
-            code && navigator.clipboard.writeText(code);
-          }}
-        >
-          <FaCopy className="text-neutral-400/80 text-xl" />
-        </IconButton>
+          <IconButton
+            className="rounded-lg"
+            tooltip="Copy code"
+            onClick={(e) => {
+              e.stopPropagation();
+              code && navigator.clipboard.writeText(code);
+              code && toast.success('Copy successfully');
+            }}
+          >
+            <FaCopy className="text-neutral-400/80 text-xl" />
+          </IconButton>
+        </div>
       </CollapsibleTrigger>
 
       <CollapsibleContent
