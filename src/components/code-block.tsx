@@ -13,7 +13,6 @@ import {
   CollapsibleTrigger,
 } from './collapsible';
 import { IconButton } from './icon-button';
-import toast from './toast';
 
 // Create custom highlighter with dynamic imports to optimize client-side bundle size
 const highlighter = await createHighlighterCore({
@@ -56,10 +55,14 @@ export const CodeBlock: React.FC<Props> = memo(({ title, code }) => {
           <IconButton
             className="rounded-lg"
             tooltip="Copy code"
-            onClick={(e) => {
+            onClick={async (e) => {
               e.stopPropagation();
-              code && navigator.clipboard.writeText(code);
-              code && toast.success('Copy successfully');
+              if (code) {
+                code && navigator.clipboard.writeText(code);
+
+                const toast = (await import('./toast')).default;
+                toast.success('Copy successfully');
+              }
             }}
           >
             <FaCopy className="text-neutral-400/80 text-xl" />

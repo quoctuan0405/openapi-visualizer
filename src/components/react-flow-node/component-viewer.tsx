@@ -19,7 +19,6 @@ import type {
   ComponentNode,
   PathNode,
 } from '../../store/yamlFile/type-and-utils';
-import toast from '../toast';
 import { ColorCircle } from './color-circle';
 import { ColorPalette } from './color-palette';
 import { Combinators } from './combinators';
@@ -109,8 +108,10 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = memo(
               onMouseLeave={() => setIsCtrlHoverTitle(false)}
               onClick={onCtrlClickTitle}
               onKeyDown={onCtrlClickTitle}
-              onDoubleClick={() => {
+              onDoubleClick={async () => {
                 navigator.clipboard.writeText(name);
+
+                const toast = (await import('../toast')).default;
                 toast.success('Copy successfully');
               }}
             >
