@@ -170,10 +170,11 @@ export const buildTreeOfFile = async (fileObject: OpenAPIFileSchema) => {
           }
         } else {
           // Else get the first ref object (this is for weird case)
-          const requestRefObjects = findAllRefPaths(apiDefinition.requestBody);
-          if (requestRefObjects) {
+          const requestRefPaths = findAllRefPaths(apiDefinition.requestBody);
+          if (requestRefPaths) {
             request.schema = {
-              type: requestRefObjects[0],
+              type: getObjectNameFromRefPath(requestRefPaths[0]),
+              isRef: true,
             };
           }
         }
@@ -222,12 +223,13 @@ export const buildTreeOfFile = async (fileObject: OpenAPIFileSchema) => {
               }
             } else {
               // Else get the first ref object (this is for weird case)
-              const requestRefObjects = findAllRefPaths(
+              const responseRefObjects = findAllRefPaths(
                 apiDefinition.requestBody,
               );
-              if (requestRefObjects) {
-                request.schema = {
-                  type: requestRefObjects[0],
+              if (responseRefObjects) {
+                response.schema = {
+                  type: getObjectNameFromRefPath(responseRefObjects[0]),
+                  isRef: true,
                 };
               }
             }
