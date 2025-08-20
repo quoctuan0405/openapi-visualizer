@@ -60,7 +60,7 @@ export const Item: React.FC<Props> = memo(
           subject.current.next(e);
         }}
       >
-        <div className="text-left relative z-10">{children}</div>
+        <div className="text-left text-pretty relative z-10">{children}</div>
       </button>
     );
   },
