@@ -23,9 +23,32 @@ export const toggleIsShow = () => {
 
 // Subscription
 subscribe(selectedItemStore, () => {
-  if (store.mode !== 'path-viewer' && store.mode !== 'code-viewer') {
-    store.mode = 'path-viewer';
+  const currentHistoryIndex = selectedItemStore.history.index;
+
+  if (currentHistoryIndex > 0) {
+    // Check if the right graph change
+    const previousStore =
+      selectedItemStore.history.nodes[currentHistoryIndex - 1].snapshot;
+    if (
+      previousStore.selectedPathRight !==
+        selectedItemStore.value.selectedPathRight ||
+      previousStore.selectedComponentNameRight !==
+        selectedItemStore.value.selectedComponentNameRight
+    ) {
+      autoSwitchToCorrectMode();
+    }
+  } else {
+    // The first time
+    autoSwitchToCorrectMode();
+  }
+});
+
+const autoSwitchToCorrectMode = () => {
+  if (selectedItemStore.value.selectedPathRight) {
+    if (store.mode !== 'path-viewer' && store.mode !== 'code-viewer') {
+      store.mode = 'path-viewer';
+    }
   } else if (selectedItemStore.value.selectedComponentNameRight) {
     store.mode = 'object-tracing';
   }
-});
+};

@@ -2,8 +2,12 @@ import { Handle, type Node, type NodeProps, Position } from '@xyflow/react';
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '../../lib/cn';
 import { isEmpty } from '../../lib/isEmpty';
+import type { Side } from '../../store/focusSide';
 import { dragHandleClass } from '../../store/reactFlow';
-import { setSelectedPathLeft } from '../../store/selectedItem';
+import {
+  setSelectedPathLeft,
+  setSelectedPathRight,
+} from '../../store/selectedItem';
 import type {
   Property,
   RequestBody,
@@ -20,6 +24,7 @@ export type PathViewerData = {
   parameters?: Property[];
   requestBody?: RequestBody;
   responses?: Response[];
+  graphSide?: Side;
 };
 
 export type PathViewerNode = Node<PathViewerData, 'path-viewer'>;
@@ -67,7 +72,13 @@ export const PathViewer: React.FC<PathViewerProps> = ({ data }) => {
   ) => {
     if (e.ctrlKey) {
       e.preventDefault();
-      setSelectedPathLeft(`${data.method.toUpperCase()} ${data.path}`);
+
+      const path = `${data.method.toUpperCase()} ${data.path}`;
+      if (data.graphSide === 'left') {
+        setSelectedPathLeft(path);
+      } else if (data.graphSide === 'right') {
+        setSelectedPathRight(path);
+      }
     }
   };
 

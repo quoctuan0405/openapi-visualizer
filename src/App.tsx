@@ -50,7 +50,15 @@ const App = () => {
 
   return (
     <>
-      <Toaster />
+      <Toaster
+        toastOptions={{
+          classNames: {
+            success: 'dark:!bg-neutral-800 dark:!border-neutral-800',
+            title: '!text-neutral-500 dark:!text-neutral-400',
+            icon: 'text-green-500',
+          },
+        }}
+      />
 
       {/* <AuroraBackground> */}
       <ResizablePanelGroup className="max-h-screen" direction="horizontal">

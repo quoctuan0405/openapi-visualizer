@@ -8,11 +8,13 @@ import { IconButton } from './icon-button';
 export const UndoRedoPanel: React.FC = () => {
   const { undo, redo, canUndo, canRedo } = useSnapshot(selectedItemStore);
 
-  useHotkeys('Ctrl + Z', () => {
+  useHotkeys('Ctrl + Z', (e) => {
+    e.preventDefault();
     undo();
   });
 
-  useHotkeys('Ctrl + Shift + Z', () => {
+  useHotkeys('Ctrl + Shift + Z', (e) => {
+    e.preventDefault();
     redo();
   });
 

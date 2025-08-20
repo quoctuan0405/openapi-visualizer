@@ -235,6 +235,7 @@ const createObjectGraph = async (
           parameters: component.parameters,
           requestBody: component.requestBody,
           responses: component.responses,
+          graphSide,
         },
       };
     } else {
@@ -295,6 +296,7 @@ const createPathGraph = async (pathTree: PathNode, graphSide: Side) => {
       parameters: pathTree.parameters,
       requestBody: pathTree.requestBody,
       responses: pathTree.responses,
+      graphSide,
     },
   };
 

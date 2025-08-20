@@ -23,6 +23,27 @@ export const toggleIsShow = () => {
 
 // Subscription
 subscribe(selectedItemStore, () => {
+  const currentHistoryIndex = selectedItemStore.history.index;
+
+  if (currentHistoryIndex > 0) {
+    // Check if the left graph change
+    const previousStore =
+      selectedItemStore.history.nodes[currentHistoryIndex - 1].snapshot;
+    if (
+      previousStore.selectedPathLeft !==
+        selectedItemStore.value.selectedPathLeft ||
+      previousStore.selectedComponentNameLeft !==
+        selectedItemStore.value.selectedComponentNameLeft
+    ) {
+      autoSwitchToCorrectMode();
+    }
+  } else {
+    // The first time
+    autoSwitchToCorrectMode();
+  }
+});
+
+const autoSwitchToCorrectMode = () => {
   if (selectedItemStore.value.selectedPathLeft) {
     if (store.mode !== 'path-viewer' && store.mode !== 'code-viewer') {
       store.mode = 'path-viewer';
@@ -30,4 +51,4 @@ subscribe(selectedItemStore, () => {
   } else if (selectedItemStore.value.selectedComponentNameLeft) {
     store.mode = 'object-tracing';
   }
-});
+};

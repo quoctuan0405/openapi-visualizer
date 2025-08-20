@@ -223,9 +223,7 @@ export const buildTreeOfFile = async (fileObject: OpenAPIFileSchema) => {
               }
             } else {
               // Else get the first ref object (this is for weird case)
-              const responseRefObjects = findAllRefPaths(
-                apiDefinition.requestBody,
-              );
+              const responseRefObjects = findAllRefPaths(responseObj);
               if (responseRefObjects) {
                 response.schema = {
                   type: getObjectNameFromRefPath(responseRefObjects[0]),
