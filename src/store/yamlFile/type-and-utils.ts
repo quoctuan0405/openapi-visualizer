@@ -192,6 +192,7 @@ export const buildTreeOfFile = async (fileObject: OpenAPIFileSchema) => {
           });
           if (refObjectBodyTree) {
             request.refs?.push(refObjectBodyTree);
+            request.flattenRefs?.add(refObjectBodyTree);
           }
         }
         pathNode.requestBody = request;
@@ -249,6 +250,7 @@ export const buildTreeOfFile = async (fileObject: OpenAPIFileSchema) => {
 
               if (refObjectResponseTree) {
                 response.refs?.push(refObjectResponseTree);
+                response.flattenRefs?.add(refObjectResponseTree);
               }
             }
 
