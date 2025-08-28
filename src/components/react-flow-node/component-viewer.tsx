@@ -34,7 +34,18 @@ export type ComponentViewerNode = Node<ComponentViewerData, 'component-viewer'>;
 export type ComponentViewerProps = NodeProps<ComponentViewerNode>;
 
 export const ComponentViewer: React.FC<ComponentViewerProps> = memo(
-  ({ data: { name, graphSide, paths, enums, properties, allOf, oneOf } }) => {
+  ({
+    data: {
+      name,
+      graphSide,
+      paths,
+      enums,
+      properties,
+      allOf,
+      oneOf,
+      isAnotherComponent,
+    },
+  }) => {
     // Open and close color palette
     const componentViewerRef = useRef<HTMLDivElement>(null);
     const colorPaletteRef = useRef<HTMLDivElement>(null);
@@ -139,6 +150,14 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = memo(
                 />
               ))}
             </div>
+
+            {!isEmpty(isAnotherComponent) && (
+              <span
+                className={`${textColorMapper[color]} select-text text-sm font-semibold`}
+              >
+                {isAnotherComponent}
+              </span>
+            )}
 
             {!isEmpty(allOf) && (
               <div>

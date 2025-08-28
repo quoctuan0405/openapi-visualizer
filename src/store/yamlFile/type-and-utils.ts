@@ -102,6 +102,7 @@ export type ComponentNode = {
   properties?: Property[];
   allOf?: Combinator[];
   oneOf?: Combinator[];
+  isAnotherComponent?: string; // This component *is* another component. This is weird, but it is exist!
   refs?: ComponentNode[];
 };
 
@@ -325,6 +326,7 @@ const buildTreeOfComponent = ({
     paths: new Set([path]),
     parents: new Set([parent]),
     properties: getProperties(componentDetail),
+    isAnotherComponent: getComponent(componentDetail),
     allOf: getAllOf(componentDetail),
     oneOf: getOneOf(componentDetail),
     refs: [],
@@ -417,6 +419,48 @@ const getParameters = (obj: any) => {
   } catch (_) {}
 
   return undefined;
+};
+
+// This is a weird schema but it exists!
+// It's just like this:
+// Response:
+//   $ref: '#/components/schemas/Component'
+// or
+// Response:
+//   schema:
+//     $ref: '#/components/schemas/Component'
+// Basically a component is directly equals another component
+const isComponentSchema1 = z.looseObject({
+  type: z.nullish(z.string()),
+  $ref: z.string(),
+});
+
+const isComponentSchema2 = z.looseObject({
+  schema: isComponentSchema1,
+});
+
+const getComponent = (obj: any) => {
+  try {
+    const component = isComponentSchema1.parse(obj);
+    const objectName = getObjectNameFromRefPath(component.$ref);
+
+    if (component.type === 'array') {
+      return `${objectName}[]`;
+    } else {
+      return objectName;
+    }
+  } catch (_) {}
+
+  try {
+    const component = isComponentSchema2.parse(obj);
+    const objectName = getObjectNameFromRefPath(component.schema.$ref);
+
+    if (component.schema.type === 'array') {
+      return `${objectName}[]`;
+    } else {
+      return objectName;
+    }
+  } catch (_) {}
 };
 
 const objectPropertySchema = z.looseObject({
