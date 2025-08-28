@@ -31,8 +31,10 @@ export const setFileContent = async (fileName: string, fileContent: string) => {
     store.doc = doc;
     store.fileContent = fileContent;
 
-    const { pathsTree, components } = await buildTreeOfFile(doc);
+    const { pathsTree, components, missingRefComponents } =
+      await buildTreeOfFile(doc);
     store.pathsTree = pathsTree;
     store.components = components;
+    store.missingRefComponents = missingRefComponents;
   } catch (_) {}
 };

@@ -7,6 +7,7 @@ import {
 } from '@xyflow/react';
 import type React from 'react';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { PiWarningFill } from 'react-icons/pi';
 import { cn } from '../../lib/cn';
 import { isEmpty } from '../../lib/isEmpty';
 import type { Side } from '../../store/focusSide';
@@ -19,6 +20,7 @@ import type {
   ComponentNode,
   PathNode,
 } from '../../store/yamlFile/type-and-utils';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../tooltip';
 import { ColorCircle } from './color-circle';
 import { ColorPalette } from './color-palette';
 import { Combinators } from './combinators';
@@ -38,6 +40,7 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = memo(
     data: {
       name,
       graphSide,
+      isAMissingRef,
       paths,
       enums,
       properties,
@@ -52,7 +55,10 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = memo(
 
     const [isOpenColorPalette, setIsOpenColorPalette] =
       useState<boolean>(false);
-    const [color, setColor] = useState<Color>('blue');
+
+    const [color, setColor] = useState<Color>(
+      isAMissingRef ? 'yellow' : 'blue',
+    );
 
     useEffect(() => {
       if (isOpenColorPalette) {
@@ -107,6 +113,17 @@ export const ComponentViewer: React.FC<ComponentViewerProps> = memo(
           <div
             className={`flex flex-row flex-wrap items-center gap-5 pl-5 pr-3 border-b-2 border-neutral-200 dark:border-neutral-800 ${dragHandleClass}`}
           >
+            {isAMissingRef && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <PiWarningFill className="text-3xl text-yellow-500 dark:text-yellow-600" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  This component is reference to but not exist
+                </TooltipContent>
+              </Tooltip>
+            )}
+
             <p
               className={cn(
                 `flex-1 py-2 ${textColorMapper[color]} font-semibold duration-200`,

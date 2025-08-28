@@ -49,6 +49,8 @@ const autoSwitchToCorrectMode = () => {
       store.mode = 'path-viewer';
     }
   } else if (selectedItemStore.value.selectedComponentNameLeft) {
-    store.mode = 'object-tracing';
+    if (store.mode !== 'object-tracing' && store.mode !== 'missing-refs') {
+      store.mode = 'object-tracing';
+    }
   }
 };

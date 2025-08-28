@@ -23,6 +23,10 @@ export const ActivityBarLeft: React.FC = memo(() => {
     setMode('code-viewer');
   }, []);
 
+  const onChooseMissingRefs = useCallback(() => {
+    setMode('missing-refs');
+  }, []);
+
   const onClick = useCallback(() => {
     setFocusSide('left');
   }, []);
@@ -34,6 +38,7 @@ export const ActivityBarLeft: React.FC = memo(() => {
       onChoosePathViewer={onChoosePathViewer}
       onChooseObjectTracing={onChooseObjectTracing}
       onChooseCodeViewer={onChooseCodeViewer}
+      onChooseMissingRefs={onChooseMissingRefs}
       onClick={onClick}
     />
   );

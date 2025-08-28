@@ -95,7 +95,8 @@ export type Response = {
 
 export type ComponentNode = {
   name: string;
-  rawDefinition: any;
+  rawDefinition?: any;
+  isAMissingRef?: boolean;
   enums?: string | null;
   paths?: Set<PathNode>;
   parents?: Set<ComponentNode | PathNode>;
@@ -126,12 +127,14 @@ export type Store = {
   doc?: OpenAPIFileSchema;
   pathsTree?: Record<string, PathNode>;
   components?: Record<string, ComponentNode>;
+  missingRefComponents?: Record<string, ComponentNode>;
 };
 
 // Utils
 export const buildTreeOfFile = async (fileObject: OpenAPIFileSchema) => {
   const pathsTree: Record<string, PathNode> = {};
   const components: Record<string, ComponentNode> = {};
+  const missingRefComponents: Record<string, ComponentNode> = {};
 
   for (const [path, pathDefinition] of Object.entries(fileObject.paths)) {
     for (const [key, definition] of Object.entries(pathDefinition)) {
@@ -182,14 +185,40 @@ export const buildTreeOfFile = async (fileObject: OpenAPIFileSchema) => {
 
         const bodyRefPaths = findAllRefPaths(apiDefinition.requestBody);
         for (const bodyRefPath of bodyRefPaths) {
-          const bodyRefObj = getObjectFromRefPath(fileObject, bodyRefPath);
+          const bodyRefComponent = getObjectFromRefPath(
+            fileObject,
+            bodyRefPath,
+          );
+          // Check if point to real ref object
+          if (!bodyRefComponent) {
+            const missingBodyRefComponentName =
+              getObjectNameFromRefPath(bodyRefPath) || `${path} body`;
+            const missingBodyRefComponent = {
+              name: missingBodyRefComponentName,
+              isAMissingRef: true,
+              paths: new Set([pathNode]),
+              parents: new Set([pathNode]),
+            };
+            missingRefComponents[missingBodyRefComponentName] =
+              missingBodyRefComponent;
+            components[missingBodyRefComponentName] = missingBodyRefComponent;
+            request.refs?.push(missingBodyRefComponent);
+            request.flattenRefs = new Set([
+              missingBodyRefComponent,
+              ...request.flattenRefs,
+            ]);
+            continue;
+          }
+
+          // Else build tree of that ref object
           const refObjectBodyTree = buildTreeOfComponent({
             fileObject,
-            obj: bodyRefObj,
+            obj: bodyRefComponent,
             path: pathNode,
             parent: pathNode,
             components,
             flattenRefs: request.flattenRefs,
+            missingRefComponents,
           });
           if (refObjectBodyTree) {
             request.refs?.push(refObjectBodyTree);
@@ -243,6 +272,31 @@ export const buildTreeOfFile = async (fileObject: OpenAPIFileSchema) => {
                 fileObject,
                 responseRefPath,
               );
+
+              // Check if point to real ref object
+              if (!responseRefObj) {
+                const missingResponseRefObjName =
+                  getObjectNameFromRefPath(responseRefObj) ||
+                  `${path} response ${status}`;
+                const missingResponseRefComponent: ComponentNode = {
+                  name: missingResponseRefObjName,
+                  isAMissingRef: true,
+                  paths: new Set([pathNode]),
+                  parents: new Set([pathNode]),
+                };
+                missingRefComponents[missingResponseRefObjName] =
+                  missingResponseRefComponent;
+                components[missingResponseRefObjName] =
+                  missingResponseRefComponent;
+                response.refs?.push(missingResponseRefComponent);
+                response.flattenRefs = new Set([
+                  missingResponseRefComponent,
+                  ...response.flattenRefs,
+                ]);
+                continue;
+              }
+
+              // Else build tree of that ref object
               const refObjectResponseTree = buildTreeOfComponent({
                 fileObject,
                 obj: responseRefObj,
@@ -250,6 +304,7 @@ export const buildTreeOfFile = async (fileObject: OpenAPIFileSchema) => {
                 parent: pathNode,
                 components,
                 flattenRefs: response.flattenRefs,
+                missingRefComponents,
               });
 
               if (refObjectResponseTree) {
@@ -273,7 +328,7 @@ export const buildTreeOfFile = async (fileObject: OpenAPIFileSchema) => {
     }
   }
 
-  return { pathsTree, components };
+  return { pathsTree, components, missingRefComponents };
 };
 
 /**
@@ -284,6 +339,7 @@ export const buildTreeOfFile = async (fileObject: OpenAPIFileSchema) => {
  * @param param.parent - object to build tree from
  * @param param.components - record of all tree nodes, also for prevent circular recursion
  * @param param.flattenRefs - list of ref objects, flatten in a Set instead of ref (a tree)
+ * @param param.missingRefComponents - list of missing ref objects
  * @returns doubly linked tree of that component
  */
 type BuildTreeOfComponentParam = {
@@ -293,6 +349,7 @@ type BuildTreeOfComponentParam = {
   path: PathNode;
   components: Record<string, ComponentNode>;
   flattenRefs: Set<ComponentNode>;
+  missingRefComponents: Record<string, ComponentNode>;
 };
 const buildTreeOfComponent = ({
   fileObject,
@@ -301,6 +358,7 @@ const buildTreeOfComponent = ({
   parent,
   components,
   flattenRefs,
+  missingRefComponents,
 }: BuildTreeOfComponentParam) => {
   // Make sure object is not empty and is an actual object
   if (!isObject(obj) || isEmpty(obj)) {
@@ -338,6 +396,25 @@ const buildTreeOfComponent = ({
   const refPaths = findAllRefPaths(obj);
   for (const refPath of refPaths) {
     const refObj = getObjectFromRefPath(fileObject, refPath);
+
+    // Check if point to real ref object
+    if (!refObj) {
+      const missingRefComponentName =
+        getObjectNameFromRefPath(refPath) || refPath;
+      const missingRefComponent: ComponentNode = {
+        name: missingRefComponentName,
+        isAMissingRef: true,
+        paths: new Set([path]),
+        parents: new Set([componentNode]),
+      };
+      missingRefComponents[missingRefComponentName] = missingRefComponent;
+      components[missingRefComponentName] = missingRefComponent;
+      flattenRefs.add(missingRefComponent);
+      componentNode.refs?.push(missingRefComponent);
+      continue;
+    }
+
+    // If point to real ref object, recursion
     const refObjTree = buildTreeOfComponent({
       fileObject,
       obj: refObj,
@@ -345,6 +422,7 @@ const buildTreeOfComponent = ({
       parent: componentNode,
       components,
       flattenRefs,
+      missingRefComponents,
     });
 
     if (refObjTree) {
@@ -716,6 +794,10 @@ const getObjectFromRefPath = (
   let obj: any = fileObject;
   for (const part of parts) {
     obj = obj[part];
+
+    if (!obj) {
+      return;
+    }
   }
 
   return { [objName]: obj };

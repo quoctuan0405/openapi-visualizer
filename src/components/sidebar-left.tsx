@@ -32,6 +32,11 @@ export const SidebarLeft: React.FC = memo(() => {
     [yamlFileLeftSnap],
   );
 
+  const missingComponentNames = useMemo(
+    () => Object.keys(yamlFileLeftSnap.missingRefComponents || {}),
+    [yamlFileLeftSnap],
+  );
+
   const onClick = useCallback(() => {
     setFocusSide('left');
   }, []);
@@ -45,6 +50,7 @@ export const SidebarLeft: React.FC = memo(() => {
       selectedPath={selectedItemSnap.value.selectedPathLeft}
       onPathSelected={setSelectedPathLeft}
       componentNames={componentNames}
+      missingComponentNames={missingComponentNames}
       selectedComponent={selectedItemSnap.value.selectedComponentNameLeft}
       onComponentSelected={setSelectedComponentLeft}
       onHideSidebar={toggleIsShow}

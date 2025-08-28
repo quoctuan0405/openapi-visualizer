@@ -11,6 +11,10 @@ export const ActivityBarRight: React.FC = memo(() => {
   const { mode } = useSnapshot(sidebarRightStore);
   const { focusSide } = useSnapshot(focusSideStore);
 
+  const onChooseCodeViewer = useCallback(() => {
+    setMode('code-viewer');
+  }, []);
+
   const onChoosePathViewer = useCallback(() => {
     setMode('path-viewer');
   }, []);
@@ -19,12 +23,12 @@ export const ActivityBarRight: React.FC = memo(() => {
     setMode('object-tracing');
   }, []);
 
-  const onClick = useCallback(() => {
-    setFocusSide('right');
+  const onChooseMissingRefs = useCallback(() => {
+    setMode('missing-refs');
   }, []);
 
-  const onChooseCodeViewer = useCallback(() => {
-    setMode('code-viewer');
+  const onClick = useCallback(() => {
+    setFocusSide('right');
   }, []);
 
   return (
@@ -34,6 +38,7 @@ export const ActivityBarRight: React.FC = memo(() => {
       onChoosePathViewer={onChoosePathViewer}
       onChooseObjectTracing={onChooseObjectTracing}
       onChooseCodeViewer={onChooseCodeViewer}
+      onChooseMissingRefs={onChooseMissingRefs}
       onClick={onClick}
     />
   );

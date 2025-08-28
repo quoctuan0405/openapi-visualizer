@@ -18,6 +18,7 @@ type Props = {
   selectedPath?: string;
   onPathSelected: (path: string) => void;
   componentNames: string[];
+  missingComponentNames: string[];
   selectedComponent?: string;
   onComponentSelected: (componentName: string) => void;
   onHideSidebar?: () => void;
@@ -33,6 +34,7 @@ export const Sidebar: React.FC<Props> = memo(
     selectedPath,
     onPathSelected,
     componentNames,
+    missingComponentNames,
     selectedComponent,
     onComponentSelected,
     onHideSidebar,
@@ -83,6 +85,15 @@ export const Sidebar: React.FC<Props> = memo(
                 placeholder="Search component"
                 selectedItem={selectedComponent}
                 items={componentNames}
+                onSelectItem={onComponentSelected}
+              />
+            )}
+
+            {mode === 'missing-refs' && (
+              <ItemList
+                placeholder="Search missing components"
+                selectedItem={selectedComponent}
+                items={missingComponentNames}
                 onSelectItem={onComponentSelected}
               />
             )}

@@ -3,7 +3,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import { FaInfoCircle } from 'react-icons/fa';
 import { FiCode } from 'react-icons/fi';
 import { MdDarkMode } from 'react-icons/md';
-import { PiPathBold, PiTreeStructureFill } from 'react-icons/pi';
+import { PiPathBold, PiTreeStructureFill, PiWarningFill } from 'react-icons/pi';
 import { toggleDarkMode } from '../store/darkmode';
 import type { Mode } from '../store/sidebar/type';
 import { Dialog, DialogContent, DialogTrigger } from './dialog';
@@ -17,6 +17,7 @@ type Props = {
   onChoosePathViewer?: () => void;
   onChooseObjectTracing?: () => void;
   onChooseCodeViewer?: () => void;
+  onChooseMissingRefs?: () => void;
   onClick?: () => void; // For setting focus side (left or right)
 };
 
@@ -27,6 +28,7 @@ export const ActivityBar: React.FC<Props> = memo(
     onChoosePathViewer,
     onChooseObjectTracing,
     onChooseCodeViewer,
+    onChooseMissingRefs,
     onClick,
   }) => {
     useHotkeys('Ctrl + Shift + E', (e) => {
@@ -42,6 +44,11 @@ export const ActivityBar: React.FC<Props> = memo(
     useHotkeys('Ctrl + Shift + X', (e) => {
       e.preventDefault();
       isActivateShortcut && onChooseCodeViewer?.();
+    });
+
+    useHotkeys('Ctrl + E', (e) => {
+      e.preventDefault();
+      isActivateShortcut && onChooseMissingRefs?.();
     });
 
     return (
@@ -74,6 +81,14 @@ export const ActivityBar: React.FC<Props> = memo(
           onClick={onChooseCodeViewer}
         >
           <FiCode className="text-2xl m-1" />
+        </IconButton>
+        <IconButton
+          tooltip="View missing ref components (Ctrl + E)"
+          tooltipPosition="right"
+          selected={mode === 'missing-refs'}
+          onClick={onChooseMissingRefs}
+        >
+          <PiWarningFill className="text-2xl m-1" />
         </IconButton>
 
         <div className="flex-1"></div>
