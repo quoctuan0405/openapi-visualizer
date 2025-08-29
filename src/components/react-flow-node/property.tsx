@@ -15,13 +15,21 @@ export const PropertyItem: React.FC<PropertiesProps> = memo(
     return (
       <div key={property.name}>
         <p className="select-text">
-          <span className={`${textColorMapper[color]} text-sm font-semibold`}>
-            {property.name}
-          </span>
+          {property.isAnotherComponent && (
+            <span className={`${textColorMapper[color]} text-sm font-semibold`}>
+              {property.isAnotherComponent}
+            </span>
+          )}
+
+          {!property.isAnotherComponent && (
+            <span className={`${textColorMapper[color]} text-sm font-semibold`}>
+              {property.name}
+            </span>
+          )}
 
           {property.isRequired && <span className="text-red-500">*</span>}
 
-          {property.type && (
+          {!property.isAnotherComponent && property.type && (
             <span
               className={cn('text-sm font-semibold', {
                 'text-neutral-400': !property.isRef,
@@ -35,7 +43,8 @@ export const PropertyItem: React.FC<PropertiesProps> = memo(
             </span>
           )}
 
-          {!property.type &&
+          {!property.isAnotherComponent &&
+            !property.type &&
             isEmpty(property.allOf) &&
             isEmpty(property.oneOf) &&
             isEmpty(property.properties) && (

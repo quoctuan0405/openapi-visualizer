@@ -1,15 +1,17 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { useSnapshot } from 'valtio';
 import { store as focusSideStore, setFocusSide } from '../store/focusSide';
 import {
   setMode,
   store as sidebarLeftStore,
 } from '../store/sidebar/sidebarLeft';
+import { store as yamlFileLeftStore } from '../store/yamlFile/yamlFileLeft';
 import { ActivityBar } from './activity-bar';
 
 export const ActivityBarLeft: React.FC = memo(() => {
   const { mode } = useSnapshot(sidebarLeftStore);
   const { focusSide } = useSnapshot(focusSideStore);
+  const { missingRefComponents } = useSnapshot(yamlFileLeftStore);
 
   const onChoosePathViewer = useCallback(() => {
     setMode('path-viewer');
@@ -31,6 +33,10 @@ export const ActivityBarLeft: React.FC = memo(() => {
     setFocusSide('left');
   }, []);
 
+  const numberOfMissingRefs = useMemo(() => {
+    return missingRefComponents ? Object.keys(missingRefComponents).length : 0;
+  }, [missingRefComponents]);
+
   return (
     <ActivityBar
       mode={mode}
@@ -39,6 +45,7 @@ export const ActivityBarLeft: React.FC = memo(() => {
       onChooseObjectTracing={onChooseObjectTracing}
       onChooseCodeViewer={onChooseCodeViewer}
       onChooseMissingRefs={onChooseMissingRefs}
+      numberOfMissingRefs={numberOfMissingRefs}
       onClick={onClick}
     />
   );

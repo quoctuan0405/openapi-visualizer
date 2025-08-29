@@ -4,6 +4,7 @@ import { FaInfoCircle } from 'react-icons/fa';
 import { FiCode } from 'react-icons/fi';
 import { MdDarkMode } from 'react-icons/md';
 import { PiPathBold, PiTreeStructureFill, PiWarningFill } from 'react-icons/pi';
+import { cn } from '../lib/cn';
 import { toggleDarkMode } from '../store/darkmode';
 import type { Mode } from '../store/sidebar/type';
 import { Dialog, DialogContent, DialogTrigger } from './dialog';
@@ -18,6 +19,7 @@ type Props = {
   onChooseObjectTracing?: () => void;
   onChooseCodeViewer?: () => void;
   onChooseMissingRefs?: () => void;
+  numberOfMissingRefs?: number;
   onClick?: () => void; // For setting focus side (left or right)
 };
 
@@ -29,6 +31,7 @@ export const ActivityBar: React.FC<Props> = memo(
     onChooseObjectTracing,
     onChooseCodeViewer,
     onChooseMissingRefs,
+    numberOfMissingRefs,
     onClick,
   }) => {
     useHotkeys('Ctrl + Shift + E', (e) => {
@@ -88,6 +91,20 @@ export const ActivityBar: React.FC<Props> = memo(
           selected={mode === 'missing-refs'}
           onClick={onChooseMissingRefs}
         >
+          {numberOfMissingRefs ? (
+            <div
+              className={cn(
+                'absolute -top-1 -right-1 flex flex-wrap items-center justify-center font-semibold text-xs size-5 rounded-full dark:text-neutral-400 duration-500',
+                {
+                  'bg-blue-200 dark:bg-neutral-700': mode === 'missing-refs',
+                  'bg-neutral-200 dark:bg-neutral-800': mode !== 'missing-refs',
+                },
+              )}
+            >
+              {numberOfMissingRefs}
+            </div>
+          ) : undefined}
+
           <PiWarningFill className="text-2xl m-1" />
         </IconButton>
 

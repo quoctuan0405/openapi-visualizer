@@ -118,6 +118,7 @@ export type Property = {
   properties?: Property[];
   allOf?: Combinator[];
   oneOf?: Combinator[];
+  isAnotherComponent?: string; // This component *is* another component. This is weird, but it is exist!
   isRequired?: boolean;
 };
 
@@ -166,12 +167,11 @@ export const buildTreeOfFile = async (fileObject: OpenAPIFileSchema) => {
 
         const requestBodySchema =
           apiDefinition.requestBody?.content?.['application/json']?.schema;
-        if (requestBodySchema) {
-          // Parse the properties in schema
-          const requestBodyProperty = getProperty('schema', requestBodySchema);
-          if (requestBodyProperty) {
-            request.schema = requestBodyProperty;
-          }
+
+        // Parse the properties in schema
+        const requestBodyProperty = getProperty('schema', requestBodySchema);
+        if (requestBodyProperty) {
+          request.schema = requestBodyProperty;
         } else {
           // Else get the first ref object (this is for weird case)
           const requestRefPaths = findAllRefPaths(apiDefinition.requestBody);
@@ -191,22 +191,6 @@ export const buildTreeOfFile = async (fileObject: OpenAPIFileSchema) => {
           );
           // Check if point to real ref object
           if (!bodyRefComponent) {
-            const missingBodyRefComponentName =
-              getObjectNameFromRefPath(bodyRefPath) || `${path} body`;
-            const missingBodyRefComponent = {
-              name: missingBodyRefComponentName,
-              isAMissingRef: true,
-              paths: new Set([pathNode]),
-              parents: new Set([pathNode]),
-            };
-            missingRefComponents[missingBodyRefComponentName] =
-              missingBodyRefComponent;
-            components[missingBodyRefComponentName] = missingBodyRefComponent;
-            request.refs?.push(missingBodyRefComponent);
-            request.flattenRefs = new Set([
-              missingBodyRefComponent,
-              ...request.flattenRefs,
-            ]);
             continue;
           }
 
@@ -249,12 +233,10 @@ export const buildTreeOfFile = async (fileObject: OpenAPIFileSchema) => {
             const responseSchema =
               responseObj.content?.['application/json']?.schema;
 
-            if (responseSchema) {
-              // Parse the properties in schema
-              const responseProperty = getProperty('schema', responseSchema);
-              if (responseProperty) {
-                response.schema = responseProperty;
-              }
+            // Parse the properties in schema
+            const responseProperty = getProperty('schema', responseSchema);
+            if (responseProperty) {
+              response.schema = responseProperty;
             } else {
               // Else get the first ref object (this is for weird case)
               const responseRefObjects = findAllRefPaths(responseObj);
@@ -275,24 +257,6 @@ export const buildTreeOfFile = async (fileObject: OpenAPIFileSchema) => {
 
               // Check if point to real ref object
               if (!responseRefObj) {
-                const missingResponseRefObjName =
-                  getObjectNameFromRefPath(responseRefObj) ||
-                  `${path} response ${status}`;
-                const missingResponseRefComponent: ComponentNode = {
-                  name: missingResponseRefObjName,
-                  isAMissingRef: true,
-                  paths: new Set([pathNode]),
-                  parents: new Set([pathNode]),
-                };
-                missingRefComponents[missingResponseRefObjName] =
-                  missingResponseRefComponent;
-                components[missingResponseRefObjName] =
-                  missingResponseRefComponent;
-                response.refs?.push(missingResponseRefComponent);
-                response.flattenRefs = new Set([
-                  missingResponseRefComponent,
-                  ...response.flattenRefs,
-                ]);
                 continue;
               }
 
@@ -460,19 +424,24 @@ const addComponentAndAllItsRefToFlattenRefs = (
   }
 };
 
-const parameterPropertySchema = z.array(
-  z.looseObject({
-    name: z.string(),
-    in: z.nullish(z.string()),
-    description: z.nullish(z.string()),
-    schema: z.nullish(
-      z.looseObject({
-        type: z.nullish(z.string()),
-        enum: z.nullish(z.array(z.string())),
-      }),
-    ),
-  }),
-);
+const normalParameterSchema = z.looseObject({
+  name: z.string(),
+  in: z.nullish(z.string()),
+  description: z.nullish(z.string()),
+  schema: z.nullish(
+    z.looseObject({
+      type: z.nullish(z.string()),
+      enum: z.nullish(z.array(z.string())),
+    }),
+  ),
+});
+
+// This is for weird parameter case
+const refParameterSchema = z.looseObject({
+  $ref: z.string(),
+});
+
+const parameterPropertySchema = z.array(z.any());
 
 const getParameters = (obj: any) => {
   try {
@@ -480,17 +449,34 @@ const getParameters = (obj: any) => {
 
     const properties: Property[] = [];
     for (const parameter of parameters) {
-      if (parameter.schema?.enum) {
-        properties.push({
-          name: parameter.name,
-          type: parameter.schema.enum.join(' | '),
-        });
-      } else {
-        properties.push({
-          name: parameter.name,
-          type: parameter.schema?.type,
-        });
-      }
+      // This is for weird parameter case
+      try {
+        const refParameter = refParameterSchema.parse(parameter);
+        if (refParameter) {
+          const refObjectName = getObjectNameFromRefPath(refParameter.$ref);
+          refObjectName &&
+            properties.push({
+              name: refObjectName,
+              isAnotherComponent: refObjectName,
+            });
+          continue;
+        }
+      } catch (_) {}
+
+      try {
+        const normalParameter = normalParameterSchema.parse(parameter);
+        if (normalParameter.schema?.enum) {
+          properties.push({
+            name: normalParameter.name,
+            type: normalParameter.schema.enum.join(' | '),
+          });
+        } else {
+          properties.push({
+            name: normalParameter.name,
+            type: normalParameter.schema?.type,
+          });
+        }
+      } catch (_) {}
     }
 
     return properties;
@@ -517,6 +503,12 @@ const isComponentSchema2 = z.looseObject({
   schema: isComponentSchema1,
 });
 
+const isComponentSchema3 = z.looseObject({
+  content: z.looseObject({
+    'application/json': isComponentSchema2,
+  }),
+});
+
 const getComponent = (obj: any) => {
   try {
     const component = isComponentSchema1.parse(obj);
@@ -534,6 +526,19 @@ const getComponent = (obj: any) => {
     const objectName = getObjectNameFromRefPath(component.schema.$ref);
 
     if (component.schema.type === 'array') {
+      return `${objectName}[]`;
+    } else {
+      return objectName;
+    }
+  } catch (_) {}
+
+  try {
+    const component = isComponentSchema3.parse(obj);
+    const objectName = getObjectNameFromRefPath(
+      component.content['application/json'].schema.$ref,
+    );
+
+    if (component.content['application/json'].schema.type === 'array') {
       return `${objectName}[]`;
     } else {
       return objectName;
