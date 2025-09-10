@@ -1,5 +1,5 @@
 import { Handle, type Node, type NodeProps, Position } from '@xyflow/react';
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { cn } from '../../lib/cn';
 import { isEmpty } from '../../lib/isEmpty';
 import type { Side } from '../../store/focusSide';
@@ -31,7 +31,7 @@ export type PathViewerNode = Node<PathViewerData, 'path-viewer'>;
 
 export type PathViewerProps = NodeProps<PathViewerNode>;
 
-export const PathViewer: React.FC<PathViewerProps> = ({ data }) => {
+export const PathViewer: React.FC<PathViewerProps> = memo(({ data }) => {
   // Open and close color palette
   const componentViewerRef = useRef<HTMLDivElement>(null);
   const colorPaletteRef = useRef<HTMLDivElement>(null);
@@ -185,4 +185,4 @@ export const PathViewer: React.FC<PathViewerProps> = ({ data }) => {
       />
     </>
   );
-};
+});
