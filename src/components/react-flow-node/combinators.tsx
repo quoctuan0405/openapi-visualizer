@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import type { Combinator } from '../../store/yamlFile';
+import type { Combinator } from '../../store/yamlFile/type-and-utils';
 import { PropertyItem } from './property';
 import { type Color, textColorMapper } from './type';
 
