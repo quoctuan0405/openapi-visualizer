@@ -13,7 +13,7 @@ import { cn } from '../lib/cn';
 import { store as darkModeStore } from '../store/darkmode';
 import { nodeTypes, type Store, setNodes, store } from '../store/reactFlow';
 import { NodeLayout } from './node-layout';
-import { UndoRedoPanel } from './undo-redo-panel';
+import { ToolPanel } from './tool-panel';
 
 export const ReactFlowCanvas: React.FC = memo(() => {
   const snap = useSnapshot(store) as Store;
@@ -38,9 +38,9 @@ export const ReactFlowCanvas: React.FC = memo(() => {
       nodes={snap.nodes}
       edges={snap.edges}
       onNodesChange={onNodesChange}
-      onlyRenderVisibleElements
+      // onlyRenderVisibleElements
     >
-      <UndoRedoPanel />
+      <ToolPanel />
       <Controls />
       <NodeLayout />
       <Background />

@@ -24,7 +24,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../tooltip';
 import { ColorCircle } from './color-circle';
 import { ColorPalette } from './color-palette';
 import { Combinators } from './combinators';
-import { PropertyItem } from './property';
+import { PropertyItem } from './property-item';
 import { type Color, textColorMapper } from './type';
 
 export type ComponentViewerData = ComponentNode & {
@@ -224,7 +224,7 @@ type PathsTooltipProps = {
   paths?: PathNode[];
 };
 
-const PathsTooltip: React.FC<PathsTooltipProps> = (props) => {
+const PathsTooltip: React.FC<PathsTooltipProps> = memo((props) => {
   // Local isShow (delay for animate nodeToolbar disappear)
   const [isVisible, setIsVisible] = useState<boolean>();
 
@@ -259,4 +259,4 @@ const PathsTooltip: React.FC<PathsTooltipProps> = (props) => {
       </div>
     </NodeToolbar>
   );
-};
+});

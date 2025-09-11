@@ -13,9 +13,10 @@ import type {
   RequestBody,
   Response,
 } from '../../store/yamlFile/type-and-utils';
+import { Checkbox, useCheckbox } from '../checkbox';
 import { ColorCircle } from './color-circle';
 import { ColorPalette } from './color-palette';
-import { PropertyItem } from './property';
+import { PropertyItem } from './property-item';
 import { type Color, textColorMapper } from './type';
 
 export type PathViewerData = {
@@ -32,6 +33,9 @@ export type PathViewerNode = Node<PathViewerData, 'path-viewer'>;
 export type PathViewerProps = NodeProps<PathViewerNode>;
 
 export const PathViewer: React.FC<PathViewerProps> = memo(({ data }) => {
+  // Checkbox
+  const { isChecked, isShowCheckbox, toggleIsChecked } = useCheckbox();
+
   // Open and close color palette
   const componentViewerRef = useRef<HTMLDivElement>(null);
   const colorPaletteRef = useRef<HTMLDivElement>(null);
@@ -63,10 +67,10 @@ export const PathViewer: React.FC<PathViewerProps> = memo(({ data }) => {
   // Ctrl + hover on title
   const [isCtrlHoverTitle, setIsCtrlHoverTitle] = useState<boolean>(false);
 
-  // Ctrl + hover on title
+  // Ctrl + hover on path
   const [isCtrlHoverPath, setIsCtrlHoverPath] = useState<boolean>(false);
 
-  // Ctrl + click on title
+  // Ctrl + click on path or title
   const onCtrlClickTitleOrPath = (
     e: React.MouseEvent | React.KeyboardEvent,
   ) => {
@@ -136,7 +140,23 @@ export const PathViewer: React.FC<PathViewerProps> = memo(({ data }) => {
             <span>{data.path}</span>
           </p>
 
-          <div className={`mt-2 font-semibold text-sm select-text`}>
+          {/** biome-ignore lint/a11y/noStaticElementInteractions: it's ok this is not a button */}
+          {/** biome-ignore lint/a11y/useKeyWithClickEvents: it's ok this is not a button */}
+          <div
+            className={cn(
+              'flex flex-row flex-wrap items-center mt-2 font-semibold text-sm select-text',
+              { 'cursor-pointer': isShowCheckbox },
+            )}
+            onClick={toggleIsChecked}
+          >
+            {isShowCheckbox && (
+              <Checkbox
+                className="mr-2"
+                isChecked={isChecked}
+                onClick={toggleIsChecked}
+              />
+            )}
+
             <p className={`${textColorMapper[color]}`}>
               <span>Parameters: </span>
               <span>

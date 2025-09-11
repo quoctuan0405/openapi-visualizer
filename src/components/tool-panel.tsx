@@ -1,11 +1,13 @@
 import { Panel } from '@xyflow/react';
 import { useHotkeys } from 'react-hotkeys-hook';
+import { FaCheckToSlot } from 'react-icons/fa6';
 import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
 import { useSnapshot } from 'valtio';
+import { toggleIsShowCheckbox } from '../store/checkbox';
 import { store as selectedItemStore } from '../store/selectedItem';
 import { IconButton } from './icon-button';
 
-export const UndoRedoPanel: React.FC = () => {
+export const ToolPanel: React.FC = () => {
   const { undo, redo, canUndo, canRedo } = useSnapshot(selectedItemStore);
 
   useHotkeys('Ctrl + Z', (e) => {
@@ -37,6 +39,14 @@ export const UndoRedoPanel: React.FC = () => {
         onClick={redo}
       >
         <IoIosArrowForward className="text-2xl" />
+      </IconButton>
+      <IconButton
+        className="rounded-full text-neutral-400 hover:text-neutral-500 dark:text-neutral-600"
+        tooltip="Show/hide checkbox"
+        tooltipPosition="bottom"
+        onClick={toggleIsShowCheckbox}
+      >
+        <FaCheckToSlot className="text-2xl" />
       </IconButton>
     </Panel>
   );
