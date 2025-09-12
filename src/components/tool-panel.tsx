@@ -8,7 +8,18 @@ import { store as selectedItemStore } from '../store/selectedItem';
 import { IconButton } from './icon-button';
 
 export const ToolPanel: React.FC = () => {
-  const { undo, redo, canUndo, canRedo } = useSnapshot(selectedItemStore);
+  const {
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    value: {
+      selectedComponentNameLeft,
+      selectedComponentNameRight,
+      selectedPathLeft,
+      selectedPathRight,
+    },
+  } = useSnapshot(selectedItemStore);
 
   useHotkeys('Ctrl + Z', (e) => {
     e.preventDefault();
@@ -31,6 +42,7 @@ export const ToolPanel: React.FC = () => {
       >
         <IoIosArrowBack className="text-2xl" />
       </IconButton>
+
       <IconButton
         className="rounded-full"
         disabled={!canRedo()}
@@ -40,14 +52,20 @@ export const ToolPanel: React.FC = () => {
       >
         <IoIosArrowForward className="text-2xl" />
       </IconButton>
-      <IconButton
-        className="rounded-full text-neutral-400 hover:text-neutral-500 dark:text-neutral-600"
-        tooltip="Show/hide checkbox"
-        tooltipPosition="bottom"
-        onClick={toggleIsShowCheckbox}
-      >
-        <FaCheckToSlot className="text-2xl" />
-      </IconButton>
+
+      {(selectedComponentNameLeft ||
+        selectedComponentNameRight ||
+        selectedPathLeft ||
+        selectedPathRight) && (
+        <IconButton
+          className="rounded-full text-neutral-400 hover:text-neutral-500 dark:text-neutral-600"
+          tooltip="Show/hide checkbox"
+          tooltipPosition="bottom"
+          onClick={toggleIsShowCheckbox}
+        >
+          <FaCheckToSlot className="text-2xl" />
+        </IconButton>
+      )}
     </Panel>
   );
 };
