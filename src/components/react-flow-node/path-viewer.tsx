@@ -167,18 +167,19 @@ export const PathViewer: React.FC<PathViewerProps> = memo(({ data }) => {
                 )}
               </span>
             </p>
-            {!isEmpty(data.parameters) && (
-              <div className="flex flex-col flex-wrap gap-2 mt-2 pl-3 border-l-2">
-                {data.parameters?.map((property) => (
-                  <PropertyItem
-                    key={property.name}
-                    property={property}
-                    color={color}
-                  />
-                ))}
-              </div>
-            )}
           </div>
+
+          {!isEmpty(data.parameters) && (
+            <div className="flex flex-col flex-wrap gap-2 mt-2 pl-3 border-l-2">
+              {data.parameters?.map((property) => (
+                <PropertyItem
+                  key={property.name}
+                  property={property}
+                  color={color}
+                />
+              ))}
+            </div>
+          )}
 
           <div className="mt-2">
             <PropertyItem
