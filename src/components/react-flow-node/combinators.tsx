@@ -13,8 +13,6 @@ type CombinatorsProps = {
 // Handle oneOf, allOf
 export const Combinators: React.FC<CombinatorsProps> = memo(
   ({ color = 'blue', combinators }) => {
-    const { isChecked, isShowCheckbox, toggleIsChecked } = useCheckbox();
-
     return (
       <div className="flex flex-col flex-wrap gap-1 select-text">
         {combinators?.map((combinator, index) => (
@@ -25,28 +23,7 @@ export const Combinators: React.FC<CombinatorsProps> = memo(
           >
             <div className="text-sm text-neutral-500 font-semibold">-</div>
             {typeof combinator === 'string' ? (
-              /** biome-ignore lint/a11y/noStaticElementInteractions: it's ok this is not a button */
-              /** biome-ignore lint/a11y/useKeyWithClickEvents: it's ok this is not a button */
-              <div
-                className={cn('flex flex-row flex-wrap items-center', {
-                  'cursor-pointer': isShowCheckbox,
-                })}
-                onClick={toggleIsChecked}
-              >
-                {isShowCheckbox && (
-                  <Checkbox
-                    className="mr-2"
-                    isChecked={isChecked}
-                    onClick={toggleIsChecked}
-                  />
-                )}
-
-                <p
-                  className={`${textColorMapper[color]} text-sm font-semibold`}
-                >
-                  {combinator}
-                </p>
-              </div>
+              <TextItem color={textColorMapper[color]} item={combinator} />
             ) : (
               <div className="flex flex-col flex-wrap gap-1">
                 {combinator.map((property) => (
@@ -64,3 +41,33 @@ export const Combinators: React.FC<CombinatorsProps> = memo(
     );
   },
 );
+
+type TextItemProps = {
+  item: string;
+  color: string;
+};
+
+const TextItem: React.FC<TextItemProps> = memo(({ item, color }) => {
+  const { isChecked, isShowCheckbox, toggleIsChecked } = useCheckbox();
+
+  return (
+    /** biome-ignore lint/a11y/noStaticElementInteractions: it's ok this is not a button */
+    /** biome-ignore lint/a11y/useKeyWithClickEvents: it's ok this is not a button */
+    <div
+      className={cn('flex flex-row flex-wrap items-center', {
+        'cursor-pointer': isShowCheckbox,
+      })}
+      onClick={toggleIsChecked}
+    >
+      {isShowCheckbox && (
+        <Checkbox
+          className="mr-2"
+          isChecked={isChecked}
+          onClick={toggleIsChecked}
+        />
+      )}
+
+      <p className={`${color} text-sm font-semibold`}>{item}</p>
+    </div>
+  );
+});

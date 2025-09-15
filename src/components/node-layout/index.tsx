@@ -9,7 +9,6 @@ import {
 } from '@xyflow/react';
 import { useEffect } from 'react';
 import { useSnapshot } from 'valtio';
-import { yieldToMainThread } from '../../lib/yieldToMainThread';
 import { type Store, setNodes, store } from '../../store/reactFlow';
 // import type { MessageDataOut } from './calculate-node-layout-worker';
 
@@ -62,15 +61,14 @@ export const NodeLayout: React.FC = () => {
         //   }),
         // );
 
-        calculateNodeLayout({
+        const nodeChanges = calculateNodeLayout({
           nodes: leftGraphNodes,
           edges: leftGraphEdges,
-        }).then((nodeChanges) => {
-          if (nodeChanges) {
-            setNodes(applyNodeChanges(nodeChanges, snap.nodes));
-            store.isAddedButNotPositionCorrectlyLeft = false;
-          }
         });
+        if (nodeChanges) {
+          setNodes(applyNodeChanges(nodeChanges, snap.nodes));
+          store.isAddedButNotPositionCorrectlyLeft = false;
+        }
       } else if (snap.isAddedButNotPositionCorrectlyRight) {
         const rightGraphNodes: Node[] = [];
         const rightGraphEdges: Edge[] = [];
@@ -100,18 +98,16 @@ export const NodeLayout: React.FC = () => {
         //   }),
         // );
 
-        calculateNodeLayout({
+        const nodeChanges = calculateNodeLayout({
           nodes: rightGraphNodes,
           edges: rightGraphEdges,
           startX: width + 100,
           startY: 0,
-        }).then((nodeChanges) => {
-          if (nodeChanges) {
-            setNodes(applyNodeChanges(nodeChanges, snap.nodes));
-
-            store.isAddedButNotPositionCorrectlyRight = false;
-          }
         });
+        if (nodeChanges) {
+          setNodes(applyNodeChanges(nodeChanges, snap.nodes));
+          store.isAddedButNotPositionCorrectlyRight = false;
+        }
       }
     }
   }, [isNodeInitialized, snap, getNodesBounds]);
@@ -126,7 +122,7 @@ type CalculateNodeLayoutParam = {
   startY?: number;
 };
 
-const calculateNodeLayout = async ({
+const calculateNodeLayout = ({
   nodes,
   edges,
   startX,
@@ -141,8 +137,6 @@ const calculateNodeLayout = async ({
       width: node.measured?.width ?? 0,
       height: node.measured?.height ?? 0,
     });
-
-    yieldToMainThread();
   }
 
   for (const edge of edges) {
@@ -150,8 +144,6 @@ const calculateNodeLayout = async ({
       v: edge.source,
       w: edge.target,
     });
-
-    yieldToMainThread();
   }
 
   layout(g);
@@ -163,7 +155,6 @@ const calculateNodeLayout = async ({
     const y = (startY || 0) + position.y - (node.measured?.height ?? 0) / 2;
 
     nodeChanges.push({ id: node.id, type: 'position', position: { x, y } });
-    yieldToMainThread();
   }
 
   return nodeChanges;

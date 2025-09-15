@@ -1,11 +1,18 @@
 import { proxy } from 'valtio';
+import { subscribeKey } from 'valtio/utils';
 import { parse } from 'yaml';
+import type { Toast } from '../../components/toast';
 import { getFileExtension } from '../../lib/getFileExtenstion';
 import {
   buildTreeOfFile,
   openAPIFileSchema,
   type Store,
 } from './type-and-utils';
+
+let toast: Toast | undefined;
+import('../../components/toast').then((result) => {
+  toast = result.default;
+});
 
 // Store
 export const store = proxy<Store>({});
@@ -38,3 +45,10 @@ export const setFileContent = async (fileName: string, fileContent: string) => {
     store.missingRefComponents = missingRefComponents;
   } catch (_) {}
 };
+
+// Subscription
+subscribeKey(store, 'pathsTree', () => {
+  if (store.fileName) {
+    toast?.success(`Upload file ${store.fileName} successfully!`);
+  }
+});
