@@ -103,7 +103,7 @@ export type ComponentNode = {
   properties?: Property[];
   allOf?: Combinator[];
   oneOf?: Combinator[];
-  isAnotherComponent?: string; // This component *is* another component. This is weird, but it is exist!
+  isAnotherComponent?: string | null; // This component *is* another component. This is weird, but it is exist!
   refs?: ComponentNode[];
 };
 
@@ -493,9 +493,13 @@ const getParameters = (obj: any) => {
 // Response:
 //   schema:
 //     $ref: '#/components/schemas/Component'
+// or
+// Response:
+//   type: array
+//   items:
+//     $ref: '#/components/schemas/Component'
 // Basically a component is directly equals another component
 const isComponentSchema1 = z.looseObject({
-  type: z.nullish(z.string()),
   $ref: z.string(),
 });
 
@@ -509,39 +513,72 @@ const isComponentSchema3 = z.looseObject({
   }),
 });
 
+const isArraySchema1 = z.looseObject({
+  type: z.literal('array'),
+  items: z.looseObject({
+    type: z.nullish(z.string()),
+    $ref: z.nullish(z.string()),
+  }),
+});
+
+const isArraySchema2 = z.looseObject({
+  schema: isArraySchema1,
+});
+
+const isArraySchema3 = z.looseObject({
+  content: z.looseObject({
+    'application/json': isArraySchema2,
+  }),
+});
+
 const getComponent = (obj: any) => {
+  // Is another component
   try {
     const component = isComponentSchema1.parse(obj);
-    const objectName = getObjectNameFromRefPath(component.$ref);
-
-    if (component.type === 'array') {
-      return `${objectName}[]`;
-    } else {
-      return objectName;
-    }
+    return getObjectNameFromRefPath(component.$ref);
   } catch (_) {}
 
   try {
     const component = isComponentSchema2.parse(obj);
-    const objectName = getObjectNameFromRefPath(component.schema.$ref);
-
-    if (component.schema.type === 'array') {
-      return `${objectName}[]`;
-    } else {
-      return objectName;
-    }
+    return getObjectNameFromRefPath(component.schema.$ref);
   } catch (_) {}
 
   try {
     const component = isComponentSchema3.parse(obj);
-    const objectName = getObjectNameFromRefPath(
+    return getObjectNameFromRefPath(
       component.content['application/json'].schema.$ref,
     );
+  } catch (_) {}
 
-    if (component.content['application/json'].schema.type === 'array') {
-      return `${objectName}[]`;
+  // Is another array
+  try {
+    const component = isArraySchema1.parse(obj);
+    if (component.items.$ref) {
+      return getObjectNameFromRefPath(component.items.$ref);
     } else {
-      return objectName;
+      return component.items.type;
+    }
+  } catch (_) {}
+
+  try {
+    const component = isArraySchema2.parse(obj);
+
+    if (component.schema.items.$ref) {
+      return getObjectNameFromRefPath(component.schema.items.$ref);
+    } else {
+      return component.schema.items.type;
+    }
+  } catch (_) {}
+
+  try {
+    const component = isArraySchema3.parse(obj);
+
+    if (component.content['application/json'].schema.items.$ref) {
+      return getObjectNameFromRefPath(
+        component.content['application/json'].schema.items.$ref,
+      );
+    } else {
+      return component.content['application/json'].schema.type;
     }
   } catch (_) {}
 };

@@ -1,8 +1,21 @@
-import { lazy, memo, useDeferredValue, useMemo } from 'react';
+import {
+  lazy,
+  memo,
+  startTransition,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useSnapshot } from 'valtio';
 import { stringify } from 'yaml';
+import { yieldToMainThread } from '../lib/yieldToMainThread';
 import { store as selectedItemStore } from '../store/selectedItem';
-import type { Store as YamlFileStore } from '../store/yamlFile/type-and-utils';
+import type {
+  Response as APIResponse,
+  Store as YamlFileStore,
+} from '../store/yamlFile/type-and-utils';
 import { store as yamlFileLeftStore } from '../store/yamlFile/yamlFileLeft';
 import type { Response } from './code-panel';
 
@@ -19,58 +32,107 @@ export const CodePanelLeft: React.FC = memo(() => {
         selectedItemSnap.value.selectedPathLeft
       ];
     }
+
+    return undefined;
   }, [yamlFileLeftSnap.pathsTree, selectedItemSnap.value.selectedPathLeft]);
   const deferredPathTree = useDeferredValue(pathsTree);
 
   // Path definition
-  const pathDefinition = useMemo(() => {
-    if (deferredPathTree) {
-      return stringify({
-        [deferredPathTree.path]: deferredPathTree.rawDefinition,
-      });
+  const [pathDefinition, setPathDefinition] = useState<string>();
+
+  useEffect(() => {
+    if (!deferredPathTree) {
+      setPathDefinition(undefined);
+      return;
     }
+
+    startTransition(() => {
+      setPathDefinition(
+        stringify({
+          [deferredPathTree.path]: deferredPathTree.rawDefinition,
+        }),
+      );
+    });
   }, [deferredPathTree]);
-  const deferredPathDefinition = useDeferredValue(pathDefinition);
 
   // Request body
-  const requestBodyRefs = useMemo(() => {
+  const [requestBodyRefs, setRequestBodyRefs] = useState<string>();
+  useEffect(() => {
+    if (!deferredPathTree) {
+      setRequestBodyRefs(undefined);
+      return;
+    }
+
     let requestBodyRefs: object = {};
-    deferredPathTree?.requestBody?.flattenRefs.forEach((refObject) => {
+    deferredPathTree.requestBody?.flattenRefs.forEach((refObject) => {
       requestBodyRefs = { ...requestBodyRefs, ...refObject.rawDefinition };
     });
 
-    return stringify(requestBodyRefs);
+    startTransition(() => {
+      setRequestBodyRefs(stringify(requestBodyRefs));
+    });
   }, [deferredPathTree]);
-  const deferredRequestBodyRefs = useDeferredValue(requestBodyRefs);
 
   // Responses
-  const responses: Response[] = useMemo(() => {
-    if (!deferredPathTree?.responses) {
-      return [];
-    }
-
-    const responses: Response[] = [];
-    for (const response of deferredPathTree.responses) {
+  const serializeResponses = useCallback(async (responses: APIResponse[]) => {
+    const results: Response[] = [];
+    for (const response of responses) {
       let responseRefs: object = {};
       response.flattenRefs.forEach((refObject) => {
         responseRefs = { ...responseRefs, ...refObject.rawDefinition };
       });
 
-      responses.push({
+      results.push({
         status: response.status,
         rawDefinition: stringify(responseRefs),
       });
+
+      await yieldToMainThread();
     }
 
-    return responses;
-  }, [deferredPathTree]);
-  const deferredResponses = useDeferredValue(responses);
+    return results;
+  }, []);
+
+  const [responses, setResponses] = useState<Response[]>();
+  useEffect(() => {
+    if (!deferredPathTree?.responses) {
+      setResponses(undefined);
+      return;
+    }
+
+    serializeResponses(deferredPathTree.responses).then((responses) => {
+      startTransition(() => {
+        setResponses(responses);
+      });
+    });
+  }, [deferredPathTree, serializeResponses]);
+
+  // Component
+  const component = useMemo(() => {
+    if (
+      !yamlFileLeftSnap?.components ||
+      !selectedItemSnap?.value?.selectedComponentNameLeft
+    ) {
+      return undefined;
+    }
+
+    return stringify(
+      yamlFileLeftSnap.components[
+        selectedItemSnap.value.selectedComponentNameLeft
+      ].rawDefinition,
+    );
+  }, [
+    yamlFileLeftSnap.components,
+    selectedItemSnap.value.selectedComponentNameLeft,
+  ]);
+  const deferredComponent = useDeferredValue(component);
 
   return (
     <CodePanel
-      pathDefinition={deferredPathDefinition}
-      requestBodyRefsDefinition={deferredRequestBodyRefs}
-      responses={deferredResponses}
+      component={deferredComponent}
+      pathDefinition={pathDefinition}
+      requestBodyRefsDefinition={requestBodyRefs}
+      responses={responses}
     />
   );
 });

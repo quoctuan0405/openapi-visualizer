@@ -71,7 +71,8 @@ export const Sidebar: React.FC<Props> = memo(
           order={2}
         >
           <div className="p-5">
-            {(mode === 'path-viewer' || mode === 'code-viewer') && (
+            {/* Path viewer */}
+            {mode === 'path-viewer' && (
               <ItemList
                 placeholder="Search path"
                 selectedItem={selectedPath}
@@ -80,6 +81,7 @@ export const Sidebar: React.FC<Props> = memo(
               />
             )}
 
+            {/* Object tracing */}
             {mode === 'object-tracing' && (
               <ItemList
                 placeholder="Search component"
@@ -89,6 +91,26 @@ export const Sidebar: React.FC<Props> = memo(
               />
             )}
 
+            {/* Code viewer */}
+            {mode === 'code-viewer' && !selectedComponent && (
+              <ItemList
+                placeholder="Search path"
+                selectedItem={selectedPath}
+                items={paths}
+                onSelectItem={onPathSelected}
+              />
+            )}
+
+            {mode === 'code-viewer' && selectedComponent && (
+              <ItemList
+                placeholder="Search component"
+                selectedItem={selectedComponent}
+                items={componentNames}
+                onSelectItem={onComponentSelected}
+              />
+            )}
+
+            {/* Missing refs */}
             {mode === 'missing-refs' && (
               <ItemList
                 placeholder="Search missing components"
