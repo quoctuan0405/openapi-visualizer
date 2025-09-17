@@ -1,8 +1,6 @@
 import { graphlib, layout } from '@dagrejs/dagre';
 import {
   applyNodeChanges,
-  type Edge,
-  type Node,
   type NodeChange,
   useNodesInitialized,
   useReactFlow,
@@ -34,25 +32,49 @@ export const NodeLayout: React.FC = () => {
 
   useEffect(() => {
     if (isNodeInitialized) {
-      if (snap.isAddedButNotPositionCorrectlyLeft) {
-        const leftGraphNodes: Node[] = [];
-        const leftGraphEdges: Edge[] = [];
+      const g = new graphlib.Graph().setDefaultEdgeLabel(() => ({}));
+      g.setGraph({ rankdir: 'LR' });
 
+      if (snap.isAddedButNotPositionCorrectlyLeft) {
         for (const node of snap.nodes) {
           if (!node.measured?.width || !node.measured.height) {
             return;
           }
 
           if (snap.leftGraphNodeIds.find((nodeId) => nodeId === node.id)) {
-            leftGraphNodes.push(node);
+            g.setNode(node.id, {
+              width: node.measured?.width ?? 0,
+              height: node.measured?.height ?? 0,
+            });
           }
         }
 
         for (const edge of snap.edges) {
           if (snap.leftGraphEdgeIds.find((edgeId) => edgeId === edge.id)) {
-            leftGraphEdges.push(edge);
+            g.setEdge({
+              v: edge.source,
+              w: edge.target,
+            });
           }
         }
+
+        layout(g);
+
+        const nodeChanges: NodeChange[] = [];
+        for (const nodeId of g.nodes()) {
+          const node = g.node(nodeId);
+          const x = node.x - (node.width ?? 0) / 2;
+          const y = node.y - (node.height ?? 0) / 2;
+
+          nodeChanges.push({
+            id: nodeId,
+            type: 'position',
+            position: { x, y },
+          });
+        }
+
+        setNodes(applyNodeChanges(nodeChanges, snap.nodes));
+        store.isAddedButNotPositionCorrectlyLeft = false;
 
         // calculateNodeLayoutWorker.postMessage(
         //   JSON.stringify({
@@ -60,34 +82,30 @@ export const NodeLayout: React.FC = () => {
         //     edges: snap.edges,
         //   }),
         // );
-
-        const nodeChanges = calculateNodeLayout({
-          nodes: leftGraphNodes,
-          edges: leftGraphEdges,
-        });
-        if (nodeChanges) {
-          setNodes(applyNodeChanges(nodeChanges, snap.nodes));
-          store.isAddedButNotPositionCorrectlyLeft = false;
-        }
       } else if (snap.isAddedButNotPositionCorrectlyRight) {
-        const rightGraphNodes: Node[] = [];
-        const rightGraphEdges: Edge[] = [];
-
         for (const node of snap.nodes) {
           if (!node.measured?.width || !node.measured.height) {
             return;
           }
 
           if (snap.rightGraphNodeIds.find((nodeId) => nodeId === node.id)) {
-            rightGraphNodes.push(node);
+            g.setNode(node.id, {
+              width: node.measured?.width ?? 0,
+              height: node.measured?.height ?? 0,
+            });
           }
         }
 
         for (const edge of snap.edges) {
           if (snap.rightGraphEdgeIds.find((edgeId) => edgeId === edge.id)) {
-            rightGraphEdges.push(edge);
+            g.setEdge({
+              v: edge.source,
+              w: edge.target,
+            });
           }
         }
+
+        layout(g);
 
         const { width } = getNodesBounds(snap.leftGraphNodeIds);
 
@@ -98,64 +116,24 @@ export const NodeLayout: React.FC = () => {
         //   }),
         // );
 
-        const nodeChanges = calculateNodeLayout({
-          nodes: rightGraphNodes,
-          edges: rightGraphEdges,
-          startX: width + 100,
-          startY: 0,
-        });
-        if (nodeChanges) {
-          setNodes(applyNodeChanges(nodeChanges, snap.nodes));
-          store.isAddedButNotPositionCorrectlyRight = false;
+        const nodeChanges: NodeChange[] = [];
+        for (const nodeId of g.nodes()) {
+          const node = g.node(nodeId);
+          const x = width + 100 + node.x - (node.width ?? 0) / 2;
+          const y = node.y - (node.height ?? 0) / 2;
+
+          nodeChanges.push({
+            id: nodeId,
+            type: 'position',
+            position: { x, y },
+          });
         }
+
+        setNodes(applyNodeChanges(nodeChanges, snap.nodes));
+        store.isAddedButNotPositionCorrectlyRight = false;
       }
     }
   }, [isNodeInitialized, snap, getNodesBounds]);
 
   return null;
-};
-
-type CalculateNodeLayoutParam = {
-  nodes: Node[];
-  edges: Edge[];
-  startX?: number;
-  startY?: number;
-};
-
-const calculateNodeLayout = ({
-  nodes,
-  edges,
-  startX,
-  startY,
-}: CalculateNodeLayoutParam) => {
-  const g = new graphlib.Graph().setDefaultEdgeLabel(() => ({}));
-  g.setGraph({ rankdir: 'LR' });
-
-  for (const node of nodes) {
-    g.setNode(node.id, {
-      ...node,
-      width: node.measured?.width ?? 0,
-      height: node.measured?.height ?? 0,
-    });
-  }
-
-  for (const edge of edges) {
-    g.setEdge({
-      v: edge.source,
-      w: edge.target,
-    });
-  }
-
-  layout(g);
-
-  const nodeChanges: NodeChange[] = [];
-  for (const node of nodes) {
-    const position = g.node(node.id);
-    const x = (startX || 0) + position.x - (node.measured?.width ?? 0) / 2;
-    const y = (startY || 0) + position.y - (node.measured?.height ?? 0) / 2;
-
-    nodeChanges.push({ id: node.id, type: 'position', position: { x, y } });
-  }
-
-  return nodeChanges;
 };
