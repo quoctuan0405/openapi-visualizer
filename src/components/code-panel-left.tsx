@@ -3,7 +3,6 @@ import {
   memo,
   startTransition,
   useCallback,
-  useDeferredValue,
   useEffect,
   useMemo,
   useState,
@@ -35,13 +34,12 @@ export const CodePanelLeft: React.FC = memo(() => {
 
     return undefined;
   }, [yamlFileLeftSnap.pathsTree, selectedItemSnap.value.selectedPathLeft]);
-  const deferredPathTree = useDeferredValue(pathsTree);
 
   // Path definition
   const [pathDefinition, setPathDefinition] = useState<string>();
 
   useEffect(() => {
-    if (!deferredPathTree) {
+    if (!pathsTree) {
       setPathDefinition(undefined);
       return;
     }
@@ -49,29 +47,29 @@ export const CodePanelLeft: React.FC = memo(() => {
     startTransition(() => {
       setPathDefinition(
         stringify({
-          [deferredPathTree.path]: deferredPathTree.rawDefinition,
+          [pathsTree.path]: pathsTree.rawDefinition,
         }),
       );
     });
-  }, [deferredPathTree]);
+  }, [pathsTree]);
 
   // Request body
   const [requestBodyRefs, setRequestBodyRefs] = useState<string>();
   useEffect(() => {
-    if (!deferredPathTree) {
+    if (!pathsTree) {
       setRequestBodyRefs(undefined);
       return;
     }
 
     let requestBodyRefs: object = {};
-    deferredPathTree.requestBody?.flattenRefs.forEach((refObject) => {
+    pathsTree.requestBody?.flattenRefs.forEach((refObject) => {
       requestBodyRefs = { ...requestBodyRefs, ...refObject.rawDefinition };
     });
 
     startTransition(() => {
       setRequestBodyRefs(stringify(requestBodyRefs));
     });
-  }, [deferredPathTree]);
+  }, [pathsTree]);
 
   // Responses
   const serializeResponses = useCallback(async (responses: APIResponse[]) => {
@@ -95,17 +93,17 @@ export const CodePanelLeft: React.FC = memo(() => {
 
   const [responses, setResponses] = useState<Response[]>();
   useEffect(() => {
-    if (!deferredPathTree?.responses) {
+    if (!pathsTree?.responses) {
       setResponses(undefined);
       return;
     }
 
-    serializeResponses(deferredPathTree.responses).then((responses) => {
+    serializeResponses(pathsTree.responses).then((responses) => {
       startTransition(() => {
         setResponses(responses);
       });
     });
-  }, [deferredPathTree, serializeResponses]);
+  }, [pathsTree, serializeResponses]);
 
   // Component
   const component: Component | undefined = useMemo(() => {
@@ -128,11 +126,10 @@ export const CodePanelLeft: React.FC = memo(() => {
     yamlFileLeftSnap.components,
     selectedItemSnap.value.selectedComponentNameLeft,
   ]);
-  const deferredComponent = useDeferredValue(component);
 
   return (
     <CodePanel
-      component={deferredComponent}
+      component={component}
       pathDefinition={pathDefinition}
       requestBodyRefsDefinition={requestBodyRefs}
       responses={responses}

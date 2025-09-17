@@ -41,16 +41,16 @@ export const NodeLayout: React.FC = memo(() => {
             return;
           }
 
-          if (snap.leftGraphNodeIds.find((nodeId) => nodeId === node.id)) {
+          if (snap.leftGraphNodeIds.indexOf(node.id) !== -1) {
             g.setNode(node.id, {
-              width: node.measured?.width ?? 0,
-              height: node.measured?.height ?? 0,
+              width: node.measured.width,
+              height: node.measured.height,
             });
           }
         }
 
         for (const edge of snap.edges) {
-          if (snap.leftGraphEdgeIds.find((edgeId) => edgeId === edge.id)) {
+          if (snap.leftGraphEdgeIds.indexOf(edge.id) !== -1) {
             g.setEdge({
               v: edge.source,
               w: edge.target,
@@ -63,8 +63,8 @@ export const NodeLayout: React.FC = memo(() => {
         const nodeChanges: NodeChange[] = [];
         for (const nodeId of g.nodes()) {
           const node = g.node(nodeId);
-          const x = node.x - (node.width ?? 0) / 2;
-          const y = node.y - (node.height ?? 0) / 2;
+          const x = node.x - node.width / 2;
+          const y = node.y - node.height / 2;
 
           nodeChanges.push({
             id: nodeId,
@@ -88,16 +88,16 @@ export const NodeLayout: React.FC = memo(() => {
             return;
           }
 
-          if (snap.rightGraphNodeIds.find((nodeId) => nodeId === node.id)) {
+          if (snap.rightGraphNodeIds.indexOf(node.id) !== -1) {
             g.setNode(node.id, {
-              width: node.measured?.width ?? 0,
-              height: node.measured?.height ?? 0,
+              width: node.measured.width,
+              height: node.measured.height,
             });
           }
         }
 
         for (const edge of snap.edges) {
-          if (snap.rightGraphEdgeIds.find((edgeId) => edgeId === edge.id)) {
+          if (snap.rightGraphEdgeIds.indexOf(edge.id) !== -1) {
             g.setEdge({
               v: edge.source,
               w: edge.target,
@@ -119,8 +119,8 @@ export const NodeLayout: React.FC = memo(() => {
         const nodeChanges: NodeChange[] = [];
         for (const nodeId of g.nodes()) {
           const node = g.node(nodeId);
-          const x = width + 100 + node.x - (node.width ?? 0) / 2;
-          const y = node.y - (node.height ?? 0) / 2;
+          const x = width + 100 + node.x - node.width / 2;
+          const y = node.y - node.height / 2;
 
           nodeChanges.push({
             id: nodeId,
