@@ -5,8 +5,13 @@ export type Response = {
   rawDefinition: string;
 };
 
+export type Component = {
+  name: string;
+  rawDefinition: string;
+};
+
 type Props = {
-  component?: string;
+  component?: Component;
   pathDefinition?: string;
   requestBodyRefsDefinition?: string;
   responses?: Response[];
@@ -20,7 +25,9 @@ export const CodePanel: React.FC<Props> = ({
 }) => {
   return (
     <div className="flex flex-col flex-wrap gap-5 py-5 pr-3">
-      {component && <CodeBlock title="Component" code={component} />}
+      {component && (
+        <CodeBlock title={component.name} code={component.rawDefinition} />
+      )}
 
       {pathDefinition && (
         <CodeBlock title="Path definition" code={pathDefinition} />

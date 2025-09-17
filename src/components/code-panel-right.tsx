@@ -17,7 +17,7 @@ import type {
   Store as YamlFileStore,
 } from '../store/yamlFile/type-and-utils';
 import { store as yamlFileRightStore } from '../store/yamlFile/yamlFileRight';
-import type { Response } from './code-panel';
+import type { Component, Response } from './code-panel';
 
 const CodePanel = lazy(() => import('./code-panel'));
 
@@ -29,15 +29,15 @@ export const CodePanelRight: React.FC = memo(() => {
   const pathsTree = useMemo(() => {
     if (
       yamlFileRightSnap.pathsTree &&
-      selectedItemSnap.value.selectedPathLeft
+      selectedItemSnap.value.selectedPathRight
     ) {
       return yamlFileRightSnap.pathsTree[
-        selectedItemSnap.value.selectedPathLeft
+        selectedItemSnap.value.selectedPathRight
       ];
     }
 
     return undefined;
-  }, [yamlFileRightSnap.pathsTree, selectedItemSnap.value.selectedPathLeft]);
+  }, [yamlFileRightSnap.pathsTree, selectedItemSnap.value.selectedPathRight]);
   const deferredPathTree = useDeferredValue(pathsTree);
 
   // Path definition
@@ -111,22 +111,25 @@ export const CodePanelRight: React.FC = memo(() => {
   }, [deferredPathTree, serializeResponses]);
 
   // Component
-  const component = useMemo(() => {
+  const component: Component | undefined = useMemo(() => {
     if (
       !yamlFileRightSnap?.components ||
-      !selectedItemSnap?.value?.selectedComponentNameLeft
+      !selectedItemSnap?.value?.selectedComponentNameRight
     ) {
       return undefined;
     }
 
-    return stringify(
-      yamlFileRightSnap.components[
-        selectedItemSnap.value.selectedComponentNameLeft
-      ].rawDefinition,
-    );
+    return {
+      name: selectedItemSnap.value.selectedComponentNameRight,
+      rawDefinition: stringify(
+        yamlFileRightSnap.components[
+          selectedItemSnap.value.selectedComponentNameRight
+        ].rawDefinition,
+      ),
+    };
   }, [
     yamlFileRightSnap.components,
-    selectedItemSnap.value.selectedComponentNameLeft,
+    selectedItemSnap.value.selectedComponentNameRight,
   ]);
   const deferredComponent = useDeferredValue(component);
 

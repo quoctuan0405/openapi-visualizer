@@ -17,7 +17,7 @@ import type {
   Store as YamlFileStore,
 } from '../store/yamlFile/type-and-utils';
 import { store as yamlFileLeftStore } from '../store/yamlFile/yamlFileLeft';
-import type { Response } from './code-panel';
+import type { Component, Response } from './code-panel';
 
 const CodePanel = lazy(() => import('./code-panel'));
 
@@ -108,7 +108,7 @@ export const CodePanelLeft: React.FC = memo(() => {
   }, [deferredPathTree, serializeResponses]);
 
   // Component
-  const component = useMemo(() => {
+  const component: Component | undefined = useMemo(() => {
     if (
       !yamlFileLeftSnap?.components ||
       !selectedItemSnap?.value?.selectedComponentNameLeft
@@ -116,11 +116,14 @@ export const CodePanelLeft: React.FC = memo(() => {
       return undefined;
     }
 
-    return stringify(
-      yamlFileLeftSnap.components[
-        selectedItemSnap.value.selectedComponentNameLeft
-      ].rawDefinition,
-    );
+    return {
+      name: selectedItemSnap.value.selectedComponentNameLeft,
+      rawDefinition: stringify(
+        yamlFileLeftSnap.components[
+          selectedItemSnap.value.selectedComponentNameLeft
+        ].rawDefinition,
+      ),
+    };
   }, [
     yamlFileLeftSnap.components,
     selectedItemSnap.value.selectedComponentNameLeft,

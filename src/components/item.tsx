@@ -64,4 +64,7 @@ export const Item: React.FC<Props> = memo(
       </button>
     );
   },
+  (prevProps, nextProps) =>
+    prevProps.isHover === nextProps.isHover &&
+    prevProps.selected === nextProps.selected,
 );
