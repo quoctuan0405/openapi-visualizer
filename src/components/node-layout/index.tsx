@@ -5,7 +5,7 @@ import {
   useNodesInitialized,
   useReactFlow,
 } from '@xyflow/react';
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import { useSnapshot } from 'valtio';
 import { type Store, setNodes, store } from '../../store/reactFlow';
 // import type { MessageDataOut } from './calculate-node-layout-worker';
@@ -25,7 +25,7 @@ import { type Store, setNodes, store } from '../../store/reactFlow';
 //   store.isPositionCorrectly = true;
 // };
 
-export const NodeLayout: React.FC = () => {
+export const NodeLayout: React.FC = memo(() => {
   const snap = useSnapshot(store) as Store;
   const isNodeInitialized = useNodesInitialized({ includeHiddenNodes: false });
   const { getNodesBounds } = useReactFlow();
@@ -136,4 +136,4 @@ export const NodeLayout: React.FC = () => {
   }, [isNodeInitialized, snap, getNodesBounds]);
 
   return null;
-};
+});
