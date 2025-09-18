@@ -554,9 +554,9 @@ const getComponent = (obj: any) => {
   try {
     const component = isArraySchema1.parse(obj);
     if (component.items.$ref) {
-      return getObjectNameFromRefPath(component.items.$ref);
+      return `${getObjectNameFromRefPath(component.items.$ref)}[]`;
     } else {
-      return component.items.type;
+      return `${component.items.type}[]`;
     }
   } catch (_) {}
 
@@ -564,9 +564,9 @@ const getComponent = (obj: any) => {
     const component = isArraySchema2.parse(obj);
 
     if (component.schema.items.$ref) {
-      return getObjectNameFromRefPath(component.schema.items.$ref);
+      return `${getObjectNameFromRefPath(component.schema.items.$ref)}[]`;
     } else {
-      return component.schema.items.type;
+      return `${component.schema.items.type}[]`;
     }
   } catch (_) {}
 
@@ -574,11 +574,11 @@ const getComponent = (obj: any) => {
     const component = isArraySchema3.parse(obj);
 
     if (component.content['application/json'].schema.items.$ref) {
-      return getObjectNameFromRefPath(
+      return `${getObjectNameFromRefPath(
         component.content['application/json'].schema.items.$ref,
-      );
+      )}[]`;
     } else {
-      return component.content['application/json'].schema.type;
+      return `${component.content['application/json'].schema.type}[]`;
     }
   } catch (_) {}
 };
