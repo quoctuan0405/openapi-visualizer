@@ -1,26 +1,26 @@
-import { memo, useState } from 'react';
-import { FaCaretDown, FaCopy } from 'react-icons/fa6';
+import { memo, useState } from "react";
+import { FaCaretDown, FaCopy } from "react-icons/fa6";
 import ShikiHighlighter, {
   createHighlighterCore, // re-exported from shiki/core
   createJavaScriptRegexEngine, // re-exported from shiki/engine/javascript
-} from 'react-shiki/core';
-import { useSnapshot } from 'valtio';
-import { cn } from '../lib/cn';
-import { store as darkModeStore } from '../store/darkmode';
+} from "react-shiki/core";
+import { useSnapshot } from "valtio";
+import { cn } from "../lib/cn";
+import { store as darkModeStore } from "../store/darkmode";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from './collapsible';
-import { IconButton } from './icon-button';
+} from "./collapsible";
+import { IconButton } from "./icon-button";
 
 // Create custom highlighter with dynamic imports to optimize client-side bundle size
 const highlighter = await createHighlighterCore({
   themes: [
-    import('@shikijs/themes/catppuccin-latte'),
-    import('@shikijs/themes/catppuccin-mocha'),
+    import("@shikijs/themes/catppuccin-latte"),
+    import("@shikijs/themes/catppuccin-mocha"),
   ],
-  langs: [import('@shikijs/langs/yml')],
+  langs: [import("@shikijs/langs/yml")],
   engine: createJavaScriptRegexEngine(),
 });
 
@@ -40,10 +40,10 @@ export const CodeBlock: React.FC<Props> = memo(({ title, code }) => {
         <div className="flex flex-row flex-wrap items-center gap-2 w-full pl-5 group cursor-pointer">
           <FaCaretDown
             className={cn(
-              'text-neutral-500 group-hover:text-neutral-600 dark:text-neutral-400 group-hover:dark:text-neutral-300 duration-200',
+              "text-neutral-500 group-hover:text-neutral-600 dark:text-neutral-400 group-hover:dark:text-neutral-300 duration-200",
               {
-                'rotate-0': isOpen,
-                '-rotate-90': !isOpen,
+                "rotate-0": isOpen,
+                "-rotate-90": !isOpen,
               },
             )}
           />
@@ -53,27 +53,27 @@ export const CodeBlock: React.FC<Props> = memo(({ title, code }) => {
           </p>
 
           <IconButton
-            className="rounded-lg"
+            className="group/copy rounded-lg"
             tooltip="Copy code"
             onClick={async (e) => {
               e.stopPropagation();
               if (code) {
                 code && navigator.clipboard.writeText(code);
 
-                const toast = (await import('./toast')).default;
-                toast.success('Copy successfully');
+                const toast = (await import("./toast")).default;
+                toast.success("Copy successfully");
               }
             }}
           >
-            <FaCopy className="text-neutral-400/80 text-xl" />
+            <FaCopy className="group-active/copy:scale-90 text-neutral-400/80 text-xl duration-200 ease-in-out" />
           </IconButton>
         </div>
       </CollapsibleTrigger>
 
       <CollapsibleContent
         className={cn({
-          'animate-collapsible-up': !isOpen,
-          'animate-collapsible-down': isOpen,
+          "animate-collapsible-up": !isOpen,
+          "animate-collapsible-down": isOpen,
         })}
       >
         <ShikiHighlighter
@@ -81,11 +81,11 @@ export const CodeBlock: React.FC<Props> = memo(({ title, code }) => {
           showLanguage={false}
           language="yml"
           theme={cn({
-            'catppuccin-latte': !isDarkMode,
-            'catppuccin-mocha': isDarkMode,
+            "catppuccin-latte": !isDarkMode,
+            "catppuccin-mocha": isDarkMode,
           })}
         >
-          {code?.trim() || ''}
+          {code?.trim() || ""}
         </ShikiHighlighter>
       </CollapsibleContent>
     </Collapsible>
