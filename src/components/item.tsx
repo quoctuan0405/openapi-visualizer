@@ -1,6 +1,6 @@
-import { memo, useEffect, useRef } from 'react';
-import { cn } from '../lib/cn';
-import { useRipple } from '../lib/useRipple';
+import { memo, useEffect, useRef } from "react";
+import { cn } from "../lib/cn";
+import { useRipple } from "../lib/useRipple";
 
 type Props = {
   children?: React.ReactNode;
@@ -26,9 +26,9 @@ export const Item: React.FC<Props> = memo(
             if (!entry.isIntersecting) {
               // Element is outside the viewport
               itemRef.current?.scrollIntoView({
-                behavior: 'smooth',
-                block: 'end',
-                inline: 'nearest',
+                behavior: "smooth",
+                block: "end",
+                inline: "nearest",
               });
             }
 
@@ -48,11 +48,12 @@ export const Item: React.FC<Props> = memo(
         ref={itemRef}
         type="button"
         className={cn(
-          'relative overflow-hidden text-neutral-600/80 dark:text-neutral-300 cursor-pointer py-2 px-5 rounded-lg duration-400',
+          "relative overflow-hidden text-neutral-600/80 dark:text-neutral-300 cursor-pointer py-2 px-5 rounded-lg duration-400",
           {
-            'hover:bg-blue-100/60 dark:hover:bg-neutral-800': !selected,
-            'bg-blue-100/60 dark:bg-neutral-700': isHover,
-            'bg-blue-100 dark:bg-neutral-700 text-blue-600/70': selected,
+            "bg-blue-100/0 hover:bg-blue-100/60 dark:hover:bg-neutral-800":
+              !selected,
+            "bg-blue-100/60 dark:bg-neutral-700": isHover,
+            "bg-blue-100 dark:bg-neutral-700 text-blue-600/70": selected,
           },
         )}
         onClick={(e) => {

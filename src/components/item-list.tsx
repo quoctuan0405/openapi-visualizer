@@ -1,9 +1,9 @@
-import type { FuzzyResult } from '@nozbe/microfuzz';
-import { Highlight, useFuzzySearchList } from '@nozbe/microfuzz/react';
-import { memo, useCallback, useRef, useState } from 'react';
-import { useHotkeys } from 'react-hotkeys-hook';
-import { FaSearch } from 'react-icons/fa';
-import { Item } from './item';
+import type { FuzzyResult } from "@nozbe/microfuzz";
+import { Highlight, useFuzzySearchList } from "@nozbe/microfuzz/react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
+import { FaSearch } from "react-icons/fa";
+import { Item } from "./item";
 
 type Props = {
   placeholder?: string;
@@ -15,7 +15,7 @@ type Props = {
 export const ItemList: React.FC<Props> = memo(
   ({ placeholder, selectedItem, items, onSelectItem }) => {
     // Search
-    const [queryText, setQueryText] = useState<string>('');
+    const [queryText, setQueryText] = useState<string>("");
 
     const mapResultItem = useCallback(
       ({ item, matches: [highlightRanges] }: FuzzyResult<string>) => ({
@@ -31,16 +31,25 @@ export const ItemList: React.FC<Props> = memo(
       mapResultItem,
     });
 
+    // Local selected item for performance
+    const [localSelectedItem, setLocalSelecetedItem] = useState<
+      string | undefined
+    >(selectedItem);
+
+    useEffect(() => {
+      setLocalSelecetedItem(selectedItem);
+    }, [selectedItem]);
+
     // Hotkeys: Focus and unfocus (blur) searchbox
     const searchBoxRef = useRef<HTMLInputElement>(null);
 
-    useHotkeys('Ctrl + K', (e) => {
+    useHotkeys("Ctrl + K", (e) => {
       e.preventDefault();
       searchBoxRef.current?.focus();
     });
 
     useHotkeys(
-      'Esc',
+      "Esc",
       (e) => {
         e.preventDefault();
         searchBoxRef.current?.blur();
@@ -52,7 +61,7 @@ export const ItemList: React.FC<Props> = memo(
     const [hoverItemIndex, setHoverItemIndex] = useState<number>();
 
     useHotkeys(
-      'Up',
+      "Up",
       (e) => {
         e.preventDefault();
         setHoverItemIndex((prev) => {
@@ -69,7 +78,7 @@ export const ItemList: React.FC<Props> = memo(
     );
 
     useHotkeys(
-      'Down',
+      "Down",
       (e) => {
         e.preventDefault();
         setHoverItemIndex((prev) => {
@@ -86,7 +95,7 @@ export const ItemList: React.FC<Props> = memo(
     );
 
     useHotkeys(
-      'Enter',
+      "Enter",
       (e) => {
         if (hoverItemIndex !== undefined) {
           e.preventDefault();
@@ -116,11 +125,14 @@ export const ItemList: React.FC<Props> = memo(
           {filteredList.map(({ item, highlightRanges }, index) => (
             <Item
               key={item}
-              selected={selectedItem === item}
+              selected={localSelectedItem === item}
               isHover={hoverItemIndex === index}
               onClick={() => {
                 setHoverItemIndex(index);
-                onSelectItem?.(item);
+                setLocalSelecetedItem(item);
+                setTimeout(() => {
+                  onSelectItem?.(item);
+                }, 25);
               }}
             >
               <Highlight text={item} ranges={highlightRanges} />
